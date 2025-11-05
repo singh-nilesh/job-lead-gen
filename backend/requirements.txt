@@ -1,1 +1,10 @@
-fastapi[starlette]==0.120.4
+fastapi[standard]==0.120.4
+pydantic==2.12.2
+bcrypt
+cryptography
+python-jose
+python-multipart
+sqlalchemy
+passlib
+motor
+psycopg[binary]

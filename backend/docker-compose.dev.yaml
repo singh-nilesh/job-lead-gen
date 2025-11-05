@@ -1,0 +1,40 @@
+services:
+  postgres-service:
+    image: ankane/pgvector:v0.5.1
+    container_name: dev_postgres_db
+    environment:
+      POSTGRES_USER: ${PG_USER}
+      POSTGRES_PASSWORD: ${PG_PASSWORD}
+      POSTGRES_DB: ${PG_DB}
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./infra/pgdata:/var/lib/postgresql/data
+
+  mongodb-service:
+    image: mongo:6.0
+    container_name: dev_mongo_db
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./infra/mongodata:/data/db
+  
+  fastapi-app:
+    build:  
+      context: .
+      dockerfile: infra/fastapi.dockerfile
+    container_name: dev_fastapi_app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres-service
+      - mongodb-service
+    volumes:
+      - ./app:/code/app
+    env_file:
+      - .env
+
+networks:
+  default:
+    driver: bridge
+    name: dev_network
