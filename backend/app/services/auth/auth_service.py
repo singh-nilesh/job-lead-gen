@@ -1,8 +1,10 @@
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import SQLAlchemyError
 from .models import User
 from app.models.users import Users as DbUsers
 from app.core.logger import service_logger as logger
+
 
 # Switching to sha256_crypt, becaues facing dependency issues with bcrypt and python 13
 pwd_context = CryptContext(schemes=["sha256_crypt"], deprecated="auto")
@@ -33,23 +35,37 @@ class AuthService:
             self.db.add(user)
             self.db.commit()
             self.db.refresh(user)
-            logger.info(f"New user created successfully: {user.email}")
+            logger.info(f"New user created successfully: {user.email}, id={user.id}")
             return user
-        except Exception as e:
-            logger.exception(f"Failed to create new user, error: {e}")
-            return None
         
+        except SQLAlchemyError as e:
+            logger.error(f"Database error while creating user: {new_user.email}, error: {e}")
+        except Exception as e:
+            logger.error(f"Unexpected error while creating user: {new_user.email}, error: {e}")        
+
 
     def _get_user_by_username(self, username:str):
         """ Get user by username (email) """
-        return self.db.query(DbUsers).filter(DbUsers.email == username).first()
-    
+        try:
+            logger.info(f"Fetching user by username: {username}")
+            user = self.db.query(DbUsers).filter(DbUsers.email == username).first()
+            if user:
+                logger.info(f"User found: {username} (id={user.id})")
+            else:
+                logger.info(f"User not found: {username}")
+            return user
+        except SQLAlchemyError as e:
+            logger.error(f"Database error while fetching user: {username}, error: {e}")
+
 
     def authenticate_user(self, username:str, password:str):
         """ Authenticate user by username and password (login) """
+        logger.info(f"Authenticating user: {username}")
         auth_user:DbUsers  = self._get_user_by_username(username)
-        if not auth_user:
-            return False
-        if not pwd_context.verify(password, auth_user.password):
-            return False
-        return auth_user
+
+        if auth_user and pwd_context.verify(password, auth_user.password):
+            logger.info(f"User authenticated successfully: {username}")
+            return auth_user
+        else:
+            logger.warning(f"Authentication failed for user: {username}")
+            return None

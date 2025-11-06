@@ -19,23 +19,22 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 @router.post("/register")
 def register_user(user: User, db: Session = Depends(get_db)):
     """ Register a new user """
-    logger.info("Register attempt for user: %s", user.email)
-    
+    logger.info(f"Register attempt for user: {user.email}")
+
     # check existing user
     service = AuthService(db)
     if service._get_user_by_username(username=user.email):
-        logger.warning("Registration failed - username already present: %s", user.email)
+        logger.warning(f"Registration failed - username already present: {user.email}")
         raise HTTPException(status_code=400, detail="Username already present")
     
-    try:
     # If user not present, create new user
-        created: DbUser = service.create_user(new_user=user)
-        logger.info("User registered successfully: %s (id=%s)", created.email, created.id)
+    created: DbUser = service.create_user(new_user=user)
+    if created:
+        logger.info(f"User registered successfully: {created.email} (id={created.id})")
         return {"id": created.id, "username": created.email}
-    except Exception as e:
-        logger.error("User registration failed: %s", e)
+    else:
+        logger.error(f"User registration failed for: {user.email}")
         raise HTTPException(status_code=500, detail="User registration failed")
-
 
 
 @router.post("/login")

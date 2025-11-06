@@ -1,5 +1,7 @@
 # contains Python runtime events (Exception, etc)
 import sys
+import logging
+from typing import Optional
 
 
 def error_message_detail(error, error_detail=None):
@@ -43,8 +45,40 @@ class CustomException(Exception):
 
 
 class ServiceException(Exception):
-    """ Base exception for service layer errors. """
-    pass
+    """ Base exception for service layer errors.
+        Accepts an optional logger; if provided the exception will be logged
+    """
+    def __init__(
+        self,
+        message: str,
+        logger: Optional[logging.Logger] = None,
+        error_details=None,
+        level: str = "error",
+    ):
+        super().__init__(message)
+        self.message = message
+        self.error_details = error_details or sys
+        self._default_level = level
+        # only log if a logger was provided
+        if logger is not None:
+            self.log(logger, level)
+
+    def __str__(self):
+        return self.message
+
+    def formatted_message(self) -> str:
+        return error_message_detail(self.message, self.error_details)
+
+    def log(self, logger: logging.Logger, level: Optional[str] = None):
+        """Log this exception using provided logger. level is a string like 'error'/'warning'/'info'."""
+        lvl = level or self._default_level
+        log_method = getattr(logger, lvl, logger.error)
+        try:
+            log_method(self.formatted_message(), exc_info=True)
+        except Exception:
+            # fallback to logger.error if something goes wrong with chosen method
+            logger.error(self.formatted_message(), exc_info=True)
+
 
 class AlreadyExistsException(ServiceException):
     """ Raised when attempting to create a resource that already exists. """
@@ -61,9 +95,12 @@ class DatabaseException(ServiceException):
 
 
 # Example test block
-if __name__ == "__main__":    
+if __name__ == "__main__":
     try:
         a = 1/0
     except Exception as e:
         #logging.info("Divide by Zero")
-        raise CustomException("DIvide by ZERPo")
+        raise CustomException("DDivide by Zero")
+    
+
+

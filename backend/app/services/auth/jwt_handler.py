@@ -29,13 +29,17 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
             key= SECRET_KEY,
             algorithm= ALGORITHM
         )
+        logger.info("Access token created successfully")
+        return encode_jwt
     except Exception as e:
         logger.error("Error creating access token: %s", e)
         return None
-    return encode_jwt
+    
 
 
 def verify_token(token: str):
+    """ Verify JWT token and return the payload """
+    logger.info(f"Verifying token: {token}")
     try:
         payload = jwt.decode(
             token,
@@ -43,10 +47,14 @@ def verify_token(token: str):
             algorithms=[ALGORITHM]
         )
         username: Optional[str] = payload.get("sub")
-        if username is None:
+        if username:
+            logger.info(f"Token verified successfully for user: {username}")
+            return payload
+        else:
             logger.warning("Token is invalid or expired")
-            raise HTTPException(status_code=403, detail="Token is invalid or expired")
-        return payload
+            return None
+            #raise HTTPException(status_code=403, detail="Token is invalid or expired")
+        
     except JWTError:
-        logger.warning("Token is invalid or expired")
-        raise HTTPException(status_code=403, detail="Token is invalid or expired")
+        logger.error("JWT ERROR: Token is invalid or expired")
+        return None
