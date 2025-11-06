@@ -1,6 +1,6 @@
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
-from app.auth.models import User
+from .models import User
 from app.models.users import Users as DbUsers
 
 
@@ -21,6 +21,10 @@ class AuthService:
     
     def create_user(self, new_user:User):
         """ Create a new user in the database """
+        if len(new_user.password.encode('utf-8')) > 72:
+            print("Password too long")
+            print(User)
+            return None
         pwd_hash = pwd_context.hash(new_user.password)
         user = DbUsers(**new_user.model_dump())
         user.password = pwd_hash

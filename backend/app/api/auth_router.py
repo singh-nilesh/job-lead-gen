@@ -4,10 +4,10 @@ from fastapi.security import OAuth2PasswordRequestForm
 from datetime import timedelta
 
 from app.db.sqlalchemyConfig import get_db
-from app.auth.auth_service import AuthService
-from app.auth.jwt_handler import create_access_token, verify_token, ACCESS_TOKEN_EXPIRE_MINUTES
+from app.services.auth import AuthService
+from app.services.auth import create_access_token, verify_token, ACCESS_TOKEN_EXPIRE_MINUTES
 
-from app.auth.models import User
+from app.services.auth import User
 from app.models.users import Users as DbUser
 
 # router init

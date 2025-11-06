@@ -12,3 +12,5 @@ class Settings:
 
     POSTGRES_URL = os.getenv("POSTGRES_URL")
     MONGO_URL = os.getenv("MONGO_URL")
+
+    APP_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
