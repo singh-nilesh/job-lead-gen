@@ -1,10 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from fastapi.security import OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from datetime import timedelta
 
 from app.db.sqlalchemyConfig import get_db
 from app.services.auth import AuthService
+from app.core.logger import api_logger as logger
 from app.services.auth import create_access_token, verify_token, ACCESS_TOKEN_EXPIRE_MINUTES
 
 from app.services.auth import User
@@ -13,36 +14,61 @@ from app.models.users import Users as DbUser
 # router init
 router = APIRouter()
 
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 @router.post("/register")
 def register_user(user: User, db: Session = Depends(get_db)):
     """ Register a new user """
+    logger.info("Register attempt for user: %s", user.email)
+    
+    # check existing user
     service = AuthService(db)
     if service._get_user_by_username(username=user.email):
+        logger.warning("Registration failed - username already present: %s", user.email)
         raise HTTPException(status_code=400, detail="Username already present")
-    created: DbUser = service.create_user(new_user=user)
-    return {"id": created.id, "username": created.email}
+    
+    try:
+    # If user not present, create new user
+        created: DbUser = service.create_user(new_user=user)
+        logger.info("User registered successfully: %s (id=%s)", created.email, created.id)
+        return {"id": created.id, "username": created.email}
+    except Exception as e:
+        logger.error("User registration failed: %s", e)
+        raise HTTPException(status_code=500, detail="User registration failed")
+
 
 
 @router.post("/login")
 def login(data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     """ Login user and return JWT token """
+    logger.info("Login attempt for user: %s", data.username)
+    
     service = AuthService(db)
     auth_user = service.authenticate_user(
         username= data.username,
         password= data.password
     )
+    # If authentication fails
     if not auth_user:
+        logger.warning("Authentication failed for user: %s", data.username)
         raise HTTPException(
             status_code= status.HTTP_401_UNAUTHORIZED,
             detail="Invalid username or password",
             headers={"WWW-Authenticate": "Bearer"}
         )
+    # Create JWT token, on successful authentication
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
         data={"sub": auth_user.email},
         expires_delta= access_token_expires
     )
+    if not access_token:
+        logger.error("Failed to create access token for user: %s", data.username)
+        raise HTTPException(
+            status_code= status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Could not create access token"
+        )
+    logger.info("User authenticated: %s — access token issued (expires in %s minutes)", auth_user.email, ACCESS_TOKEN_EXPIRE_MINUTES)
     return {
         "access_token": access_token,
         "token_type": "bearer"

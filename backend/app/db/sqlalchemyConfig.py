@@ -4,7 +4,6 @@ from sqlalchemy.orm import sessionmaker
 from app.core.config import Settings
 
 # PostgreSQL connection URL
-print("Database URL:", Settings.POSTGRES_URL)
 SQLALCHEMY_DATABASE_URL = Settings.POSTGRES_URL
 
 engine = create_engine(SQLALCHEMY_DATABASE_URL)

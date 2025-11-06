@@ -41,6 +41,25 @@ class CustomException(Exception):
     def __str__(self):
         return self.error_message
 
+
+class ServiceException(Exception):
+    """ Base exception for service layer errors. """
+    pass
+
+class AlreadyExistsException(ServiceException):
+    """ Raised when attempting to create a resource that already exists. """
+    pass
+
+class NotFoundException(ServiceException):
+    """ Raised when a requested resource is not found. """
+    pass
+
+class DatabaseException(ServiceException):
+    """ Raised for database-related errors. """
+    pass
+
+
+
 # Example test block
 if __name__ == "__main__":    
     try:

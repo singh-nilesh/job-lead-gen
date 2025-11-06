@@ -1,5 +1,11 @@
 
 sudo chmod -R 777 ./app
+sudo mkdir -p ./logs
+sudo chmod -R 777 ./logs
 
-sudo rm -r ./infra/pgdata
-sudo rm -r ./infra/mongodata
+# volumes for databases
+sudo mkdir -p ./infra/pgdata
+sudo mkdir -p ./infra/mongodata
+
+sudo chmod -R 777 ./infra/pgdata
+sudo chmod -R 777 ./infra/mongodata

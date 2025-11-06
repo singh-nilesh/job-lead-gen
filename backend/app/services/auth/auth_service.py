@@ -2,9 +2,10 @@ from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 from .models import User
 from app.models.users import Users as DbUsers
+from app.core.logger import service_logger as logger
 
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# Switching to sha256_crypt, becaues facing dependency issues with bcrypt and python 13
+pwd_context = CryptContext(schemes=["sha256_crypt"], deprecated="auto")
 
 class AuthService:
     """ Service wrapping for common user's auth opertaions.
@@ -21,20 +22,21 @@ class AuthService:
     
     def create_user(self, new_user:User):
         """ Create a new user in the database """
-        if len(new_user.password.encode('utf-8')) > 72:
-            print("Password too long")
-            print(User)
-            return None
+        logger.info(f"Creating new user: {new_user.email}")
+        
         pwd_hash = pwd_context.hash(new_user.password)
         user = DbUsers(**new_user.model_dump())
         user.password = pwd_hash
+
+        logger.info(f"Storing new user in database, user:{new_user.email}")
         try:
             self.db.add(user)
             self.db.commit()
             self.db.refresh(user)
+            logger.info(f"New user created successfully: {user.email}")
             return user
-        except:
-            print("Error creating user")
+        except Exception as e:
+            logger.exception(f"Failed to create new user, error: {e}")
             return None
         
 

@@ -1,5 +1,6 @@
 from jose import JWTError, jwt
 from datetime import datetime, timedelta, timezone
+from app.core.logger import service_logger as logger
 from fastapi import HTTPException, status
 from typing import Optional
 from app.core.config import Settings
@@ -20,11 +21,17 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     
     # use numeric timestamp for "exp"
     to_encode.update({"exp": int(expire.timestamp())})
-    encode_jwt = jwt.encode(
-        to_encode,
-        key= SECRET_KEY,
-        algorithm= ALGORITHM
-    )
+    logger.info(f"Creating access token for {data.get('sub')} expiring at {expire.isoformat()}")
+
+    try:
+        encode_jwt = jwt.encode(
+            to_encode,
+            key= SECRET_KEY,
+            algorithm= ALGORITHM
+        )
+    except Exception as e:
+        logger.error("Error creating access token: %s", e)
+        return None
     return encode_jwt
 
 
@@ -37,7 +44,9 @@ def verify_token(token: str):
         )
         username: Optional[str] = payload.get("sub")
         if username is None:
+            logger.warning("Token is invalid or expired")
             raise HTTPException(status_code=403, detail="Token is invalid or expired")
         return payload
     except JWTError:
-        raise HTTPException(status_code=403, detail="Token is invalid or expired ")
+        logger.warning("Token is invalid or expired")
+        raise HTTPException(status_code=403, detail="Token is invalid or expired")
