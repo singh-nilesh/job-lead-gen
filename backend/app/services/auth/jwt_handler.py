@@ -39,7 +39,7 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
 
 def verify_token(token: str):
     """ Verify JWT token and return the payload """
-    logger.info(f"Verifying token: {token}")
+    logger.info(f"Verifying token initiated")
     try:
         payload = jwt.decode(
             token,
@@ -57,4 +57,7 @@ def verify_token(token: str):
         
     except JWTError:
         logger.error("JWT ERROR: Token is invalid or expired")
+        return None
+    except Exception as e:
+        logger.error("Error while verifying token: %s", e)
         return None

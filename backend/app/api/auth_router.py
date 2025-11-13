@@ -70,5 +70,31 @@ def login(data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get
     logger.info("User authenticated: %s — access token issued (expires in %s minutes)", auth_user.email, ACCESS_TOKEN_EXPIRE_MINUTES)
     return {
         "access_token": access_token,
-        "token_type": "bearer"
+        "token_type": "bearer",
+        "user": {
+            "id": auth_user.id,
+            "email": auth_user.email
+        }
     }
+
+
+# verify-token endpoint
+@router.get("/verify-token/{token}")
+def verify_jwt_token(token: str):
+    """ Verify JWT token validity """
+    logger.info("Token verification attempt")
+    token_payload = verify_token(token)
+
+    if token_payload:
+        logger.info("Token is valid for user", token_payload.get("sub"))
+        return {
+            "valid": True,
+            "user": token_payload.get("sub"),
+            "expires_at": token_payload.get("exp")
+        }
+    else:
+        logger.warning("Token is invalid")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token"
+        )
