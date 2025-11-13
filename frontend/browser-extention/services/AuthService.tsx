@@ -29,15 +29,15 @@ export async function registerUser( data :{
 
 // Backend API call to login a user
 export async function loginUser( data :{
-    email: string;
+    username: string;
     password: string;
 } ): Promise<any> {
     const res = await fetch(`${API_BASE}/auth/login`, {
         method: "POST",
         headers: {
-            "Content-Type": "application/json",
+            "Content-Type": "application/x-www-form-urlencoded",
         },
-        body: JSON.stringify(data),
+        body: new URLSearchParams(data).toString(),
     })
 
     if (!res.ok) {

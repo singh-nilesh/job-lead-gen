@@ -1,12 +1,14 @@
-import { loginUser, registerUser } from "@/services/AuthService";
+import { useAuth } from "@/core/AuthContext"
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 
 export default function Auth() {
 
+    const { login, register } = useAuth();
     const navigate = useNavigate();
     const [state, setState] = useState("login")
+    
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -30,7 +32,7 @@ export default function Auth() {
             }
 
             try{
-                await registerUser(formData);
+                await register(formData);
                 setState("login");
                 // clear sensitive fields
                 setFormData(prev => ({ ...prev, password: '' }));
@@ -44,10 +46,7 @@ export default function Auth() {
 
         if (state === "login") {
             try{
-                await loginUser({
-                    email: formData.email,
-                    password: formData.password,
-                })
+                await login(formData.email, formData.password);
                 navigate('/home');
             } catch (err) {
                 setError("Invalid email or password");

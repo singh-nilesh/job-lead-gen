@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import { registerUser, loginUser } from "@/services/AuthService";
 
 
+
 type User = { id: string; email: string };
 
 type AuthContextType = {
@@ -35,12 +36,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, []);
 
+  
   // Login function
   const login = async(email: string, password: string) => {
-    const { token, user } = await loginUser({ email, password });
-    localStorage.setItem("token", token);
+    const { access_token, user } = await loginUser({
+      username: email,
+      password: password,
+     });
+    localStorage.setItem("token", access_token);
     localStorage.setItem("user", JSON.stringify(user));
-    setToken(token);
+    setToken(access_token);
     setUser(user);
   };
 
