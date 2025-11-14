@@ -1,5 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
-import Auth from '@/pages/Auth';
+import Auth from '../../pages/Auth';
 import {useAuth } from "../../core/AuthContext";
 import Home from '../../pages/protected/Home';
 

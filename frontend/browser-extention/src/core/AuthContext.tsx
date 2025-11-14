@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { registerUser, loginUser } from "@/services/AuthService";
-
+import { registerUser, loginUser } from "../services/AuthService";
 
 
 type User = { id: string; email: string };
@@ -27,8 +26,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [token, setToken] = useState<string | null>(null);
 
   useEffect(() => {
-    const savedToken = localStorage.getItem("token");
-    const savedUser = localStorage.getItem("user");
+    var savedToken = localStorage.getItem("token");
+    var savedUser = localStorage.getItem("user");
+
+    if (!savedToken && import.meta.env.DEV) {
+      savedToken = import.meta.env.WXT_DEV_TOKEN;
+      savedUser = import.meta.env.WXT_DEV_USER;
+      console.log("Using dev token from .env");
+    }
     
     if (savedToken && savedUser){
       setToken(savedToken);

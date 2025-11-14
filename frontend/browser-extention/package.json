@@ -5,6 +5,8 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "predev": "ts-node pre-dev/get-auth-info.ts",
+    "predev:firefox": "ts-node pre-dev/get-auth-info.ts",
     "dev": "wxt",
     "dev:firefox": "wxt -b firefox",
     "build": "wxt build",
@@ -21,7 +23,8 @@
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-router-dom": "^7.9.5",
-    "tailwindcss": "^4.1.17"
+    "tailwindcss": "^4.1.17",
+    "ts-node": "^10.9.2"
   },
   "devDependencies": {
     "@types/react": "^19.1.12",
