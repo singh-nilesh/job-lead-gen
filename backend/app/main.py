@@ -2,7 +2,6 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.db.sqlalchemyConfig import engine, Base
-from app.models.users import Users
 from app.api import include_routers
 
 app = FastAPI()
@@ -26,7 +25,9 @@ app.add_middleware(
 async def startup_event():
 
     print("Creating Users tables...")
-    Users.metadata.create_all(bind=engine)
+    from app.db import schema
+    Base.metadata.create_all(bind=engine)
+    print("Tables created successfully.")
 
 
 # Routes

@@ -10,4 +10,6 @@ class User(BaseModel):
     )
     location: str = Field(..., min_length=2, max_length=70)
     password: str = Field(..., min_length=8, max_length=50)
+    website: str | None = None
+    
 

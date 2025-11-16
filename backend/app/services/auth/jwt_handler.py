@@ -1,7 +1,6 @@
 from jose import JWTError, jwt
 from datetime import datetime, timedelta, timezone
 from app.core.logger import service_logger as logger
-from fastapi import HTTPException, status
 from typing import Optional
 from app.core.config import Settings
 
