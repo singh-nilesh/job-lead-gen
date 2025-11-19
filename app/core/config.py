@@ -13,6 +13,10 @@ class Settings:
     ACCESS_TOKEN_EXPIRE_MINUTES:int = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "10"))
 
     POSTGRES_URL = os.getenv("POSTGRES_URL")
+    
     MONGO_URL = os.getenv("MONGO_URL")
+    MONGO_USER = os.getenv("MONGO_USER")
+    MONGO_PASS = os.getenv("MONGO_PASS")
+    MONGO_DB = os.getenv("MONGO_DB")
 
     APP_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

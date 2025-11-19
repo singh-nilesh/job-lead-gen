@@ -12,8 +12,6 @@ type AuthContextType = {
     name: string;
     email: string;
     password: string;
-    location: string;
-    phone: string;
   }) => Promise<void>;
 
   logout: () => void;
@@ -59,8 +57,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     name: string;
     email: string;
     password: string;
-    location: string;
-    phone: string;
   }) => {
     await registerUser(data);
   };

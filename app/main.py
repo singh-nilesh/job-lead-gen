@@ -11,7 +11,7 @@ async def lifespan(app: FastAPI):
     # startup code
     from app.db import schema
     print(f"Creating DB tables... in {Settings.MODE} mode")
-    schema.Base.metadata.create_all(bind=engine)
+    schema.Users.metadata.create_all(bind=engine)
 
     yield
     

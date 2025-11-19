@@ -1,7 +1,7 @@
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
-from app.models import User
+from .user import User
 from app.db import schema
 from app.core.logger import service_logger as logger
 
@@ -28,7 +28,10 @@ class AuthService:
         
         pwd_hash = pwd_context.hash(new_user.password)
         user = schema.Users(**new_user.model_dump())
+        
+        # Override password with hashed password, and set is_active to True
         user.password = pwd_hash
+        user.is_active = True
 
         logger.info(f"Storing new user in database, user:{new_user.email}")
         try:

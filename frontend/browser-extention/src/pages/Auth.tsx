@@ -10,11 +10,10 @@ export default function Auth() {
     const [state, setState] = useState("login")
     
     const [formData, setFormData] = useState({
-        name: '',
+        firstName: '',
+        lastName: '',
         email: '',
         password: '',
-        location: '',
-        phone: '',
     })
     const [rePassword, setRePassword] = useState('');
     const [error, setError] = useState<string | null>(null);
@@ -31,8 +30,21 @@ export default function Auth() {
                 return;
             }
 
+            // validation: check if first name and last name are provided
+            if (!formData.firstName.trim() || !formData.lastName.trim()) {
+                setError("Please provide both first name and last name.");
+                return;
+            }
+
             try{
-                await register(formData);
+                // Prepare data according to backend schema
+                const registerData = {
+                    name: `${formData.firstName.trim()} ${formData.lastName.trim()}`,
+                    email: formData.email,
+                    password: formData.password,
+                };
+                
+                await register(registerData);
                 setState("login");
                 // clear sensitive fields
                 setFormData(prev => ({ ...prev, password: '' }));
@@ -79,17 +91,12 @@ export default function Auth() {
                     <>
                         <div className="flex items-center mt-6 w-full bg-white border border-gray-300/80 h-12 rounded-full overflow-hidden pl-6 gap-2">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6B7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-user-round-icon lucide-user-round"><circle cx="12" cy="8" r="5" /><path d="M20 21a8 8 0 0 0-16 0" /></svg>
-                            <input type="text" name="name" placeholder="Name" className="border-none outline-none ring-0" value={formData.name} onChange={handleChange} required />
+                            <input type="text" name="firstName" placeholder="First Name" className="border-none outline-none ring-0" value={formData.firstName} onChange={handleChange} required />
                         </div>
 
                         <div className="flex items-center mt-4 w-full bg-white border border-gray-300/80 h-12 rounded-full overflow-hidden pl-6 gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6B7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-location"><path d="M21 10c0 6-9 13-9 13S3 16 3 10a9 9 0 1 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>
-                            <input type="text" name="location" placeholder="Location" className="border-none outline-none ring-0" value={formData.location} onChange={handleChange} />
-                        </div>
-
-                        <div className="flex items-center mt-4 w-full bg-white border border-gray-300/80 h-12 rounded-full overflow-hidden pl-6 gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6B7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-phone"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.86 19.86 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.86 19.86 0 0 1 2.09 4.18 2 2 0 0 1 4 2h3a2 2 0 0 1 2 1.72c.12 1.08.37 2.13.74 3.12a2 2 0 0 1-.45 2.11L8.91 10.91a16 16 0 0 0 6 6l1.96-1.36a2 2 0 0 1 2.11-.45c.99.37 2.04.62 3.12.74A2 2 0 0 1 22 16.92z" /></svg>
-                            <input type="tel" name="phone" placeholder="Phone" className="border-none outline-none ring-0" value={formData.phone} onChange={handleChange} />
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6B7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-user-round-icon lucide-user-round"><circle cx="12" cy="8" r="5" /><path d="M20 21a8 8 0 0 0-16 0" /></svg>
+                            <input type="text" name="lastName" placeholder="Last Name" className="border-none outline-none ring-0" value={formData.lastName} onChange={handleChange} required />
                         </div>
                     </>
                 )}

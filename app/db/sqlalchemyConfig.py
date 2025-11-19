@@ -1,3 +1,10 @@
+''' 
+Configuration file for SQLAlchemy ORM
+- databse: PostgreSQL for production
+- SQLite in-memory for tests
+- Usage: Authentication
+'''
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 from app.core.config import Settings
@@ -24,7 +31,7 @@ SessionLocal = sessionmaker(
 Base = declarative_base()
 
 # Dependency to get DB session
-def get_db():
+def get_auth_db():
     db = SessionLocal()
     try:
         yield db

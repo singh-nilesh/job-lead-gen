@@ -6,8 +6,6 @@ export async function registerUser( data :{
     name: string;
     email: string;
     password: string;
-    location: string;
-    phone: string;
 } ): Promise<any> {
 
     const res = await fetch(`${API_BASE}/auth/register`, {

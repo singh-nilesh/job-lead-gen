@@ -3,12 +3,13 @@ from sqlalchemy.orm import Session
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from datetime import timedelta
 
-from app.db.sqlalchemyConfig import get_db
+from app.db.sqlalchemyConfig import get_auth_db
 from app.services.auth import AuthService
+from app.services.auth import User
+
 from app.core.logger import api_logger as logger
 from app.services.auth import create_access_token, verify_token, ACCESS_TOKEN_EXPIRE_MINUTES
 
-from app.models import User
 
 # router init
 router = APIRouter()
@@ -16,7 +17,7 @@ router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 @router.post("/register")
-def register_user(user: User, db: Session = Depends(get_db)):
+def register_user(user: User, db: Session = Depends(get_auth_db)):
     """ Register a new user """
     logger.info(f"Register attempt for user: {user.email}")
 
@@ -37,7 +38,7 @@ def register_user(user: User, db: Session = Depends(get_db)):
 
 
 @router.post("/login")
-def login(data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+def login(data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_auth_db)):
     """ Login user and return JWT token """
     logger.info("Login attempt for user: %s", data.username)
     
