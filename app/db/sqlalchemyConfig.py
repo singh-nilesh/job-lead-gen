@@ -1,12 +1,18 @@
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, declarative_base
 from app.core.config import Settings
 
-# PostgreSQL connection URL
-SQLALCHEMY_DATABASE_URL = Settings.POSTGRES_URL
 
-engine = create_engine(SQLALCHEMY_DATABASE_URL)
+# Use different database URL for tests
+if Settings.MODE == 'test':
+    SQLALCHEMY_DATABASE_URL = "sqlite:///file::memory:?cache=shared"
+else:
+    SQLALCHEMY_DATABASE_URL = Settings.POSTGRES_URL
+
+engine = create_engine(
+    SQLALCHEMY_DATABASE_URL,
+    connect_args={"check_same_thread": False} if Settings.MODE == 'test' else {},
+)
 
 SessionLocal = sessionmaker(
     bind=engine,
@@ -24,3 +30,7 @@ def get_db():
         yield db
     finally:
         db.close()
+
+def teardown_db():
+    """ Drop all tables - for test cleanup """
+    Base.metadata.drop_all(bind=engine)

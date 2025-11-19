@@ -8,8 +8,7 @@ from app.services.auth import AuthService
 from app.core.logger import api_logger as logger
 from app.services.auth import create_access_token, verify_token, ACCESS_TOKEN_EXPIRE_MINUTES
 
-from app.services.auth import User
-from app.models.users import Users as DbUser
+from app.models import User
 
 # router init
 router = APIRouter()
@@ -28,7 +27,7 @@ def register_user(user: User, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail="Username already present")
     
     # If user not present, create new user
-    created: DbUser = service.create_user(new_user=user)
+    created = service.create_user(new_user=user)
     if created:
         logger.info(f"User registered successfully: {created.email} (id={created.id})")
         return {"id": created.id, "username": created.email}

@@ -1,10 +1,12 @@
 import os
 from dotenv import load_dotenv
+from typing import Literal, cast
 
 # load .env into os.environ at import time
 load_dotenv()
 
 class Settings:
+    MODE: Literal['prod','dev','test'] = cast(Literal['prod','dev','test'], os.getenv("MODE", "dev"))
     
     SECRET_KEY = os.getenv("SECRET_KEY")
     ALGORITHM = os.getenv("ALGORITHM")

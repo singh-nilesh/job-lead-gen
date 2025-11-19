@@ -1,8 +1,8 @@
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
-from .models import User
-from app.models.users import Users as DbUsers
+from app.models import User
+from app.db import schema
 from app.core.logger import service_logger as logger
 
 
@@ -27,7 +27,7 @@ class AuthService:
         logger.info(f"Creating new user: {new_user.email}")
         
         pwd_hash = pwd_context.hash(new_user.password)
-        user = DbUsers(**new_user.model_dump())
+        user = schema.Users(**new_user.model_dump())
         user.password = pwd_hash
 
         logger.info(f"Storing new user in database, user:{new_user.email}")
@@ -48,7 +48,7 @@ class AuthService:
         """ Get user by username (email) """
         try:
             logger.info(f"Fetching user by username: {username}")
-            user = self.db.query(DbUsers).filter(DbUsers.email == username).first()
+            user = self.db.query(schema.Users).filter(schema.Users.email == username).first()
             if user:
                 logger.info(f"User found: {username} (id={user.id})")
             else:
@@ -61,7 +61,7 @@ class AuthService:
     def authenticate_user(self, username:str, password:str):
         """ Authenticate user by username and password (login) """
         logger.info(f"Authenticating user: {username}")
-        auth_user:DbUsers  = self._get_user_by_username(username)
+        auth_user:schema.Users  = self._get_user_by_username(username)
 
         if auth_user and pwd_context.verify(password, auth_user.password):
             logger.info(f"User authenticated successfully: {username}")
