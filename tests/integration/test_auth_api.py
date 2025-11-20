@@ -1,7 +1,7 @@
 """ Integration tests for authentication API endpoints."""
 from fastapi.testclient import TestClient
 from app.core.config import Settings
-from app.db.sqlalchemyConfig import teardown_db
+from app.db.postgres.sqlalchemyConfig import teardown_db
 from app.services.auth import User
 from app.main import app
 import pytest

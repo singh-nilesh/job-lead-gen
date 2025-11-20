@@ -3,9 +3,8 @@ from sqlalchemy.orm import Session
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from datetime import timedelta
 
-from app.db.sqlalchemyConfig import get_auth_db
-from app.services.auth import AuthService
-from app.services.auth import User
+from app.db.postgres.sqlalchemyConfig import get_auth_db
+from app.services.auth import AuthService, User
 
 from app.core.logger import api_logger as logger
 from app.services.auth import create_access_token, verify_token, ACCESS_TOKEN_EXPIRE_MINUTES

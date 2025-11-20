@@ -12,16 +12,22 @@ services:
       - ./infra/pgdata:/var/lib/postgresql/data
 
   mongodb-service:
-    image: mongo:6.0
+    build:
+      context: ./infra/mongo
+      dockerfile: Dockerfile
     container_name: dev_mongo_db
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASS}
       MONGO_INITDB_DATABASE: ${MONGO_DB}
+
+      MONGO_APP_USER: ${APP_USER}
+      MONGO_APP_PASS: ${APP_PASSWORD}
+
     ports:
       - "27017:27017"
     volumes:
-      - ./infra/mongodata:/data/db
+      - ./infra/mongo/mongodata:/data/db
   
   fastapi-app:
     build:  

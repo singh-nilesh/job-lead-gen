@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, Boolean, DateTime
 from sqlalchemy.sql import func
-from app.db.sqlalchemyConfig import Base
+from app.db.postgres.sqlalchemyConfig import Base
 
 # Users table for Auth
 class Users(Base):

@@ -14,7 +14,7 @@ class Profile(BaseModel):
     )
     phone: str = Field(
         ...,
-        pattern=r'^\+91\s?[6-9]\d{9}$',
+        pattern=r'^\+91\s?[0-9]\d{10}$',
         description="Phone number must be entered in the format: '+91 9900114011' or '+919900114011'"
     )
     location: str = Field(..., min_length=2, max_length=70)

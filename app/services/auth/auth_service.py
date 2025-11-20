@@ -1,8 +1,8 @@
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
-from .user import User
-from app.db import schema
+from .modal import User
+from app.db.postgres import schema
 from app.core.logger import service_logger as logger
 
 

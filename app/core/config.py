@@ -14,9 +14,10 @@ class Settings:
 
     POSTGRES_URL = os.getenv("POSTGRES_URL")
     
-    MONGO_URL = os.getenv("MONGO_URL")
-    MONGO_USER = os.getenv("MONGO_USER")
-    MONGO_PASS = os.getenv("MONGO_PASS")
+    MONGO_APP_USER = os.getenv("APP_USER")
+    MONGO_APP_PASS = os.getenv("APP_PASSWORD")
     MONGO_DB = os.getenv("MONGO_DB")
+    
+    MONGO_URL = f"mongodb://{MONGO_APP_USER}:{MONGO_APP_PASS}@mongodb-service:27017/{MONGO_DB}?authSource={MONGO_DB}"
 
     APP_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
