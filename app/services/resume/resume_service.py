@@ -13,7 +13,7 @@ class ResumeService:
 
     
 
-    async def save_resume(self, resume: dict, user_id: int) -> bool:
+    async def _save_resume(self, resume: dict, user_id: int) -> bool:
         ''' Save resume to the App database (NOSQL) '''
         logger.info(f"Saving resume for user_id: {user_id}")
 

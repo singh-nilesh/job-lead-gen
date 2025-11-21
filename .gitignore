@@ -1,6 +1,7 @@
 # dev-specific ignores
 /infra/mongo/mongodata/
 /infra/pgdata/
+/infra/qdrant_data/
 
 # Ignore .vscode settings folder
 .vscode/

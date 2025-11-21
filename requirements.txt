@@ -1,12 +1,26 @@
+# --- FastAPI ---
 fastapi[standard]==0.120.4
 pydantic==2.12.2
 
-# -- Database & ORM --
+# --- Database & ORM ---
 SQLAlchemy==2.0.36
 psycopg[binary]==3.2.3
 motor==3.6.0
 
-# -- Authentication --
+# --- Qdrant (compatible with numpy <2) ---
+qdrant-client==1.12.1
+
+# --- Authentication ---
 passlib==1.7.4
 python-jose[cryptography]==3.3.0
-python-multipart
+python-multipart==0.0.20
+
+# --- LangChain Ecosystem ---
+langchain==0.3.8
+langchain-community==0.3.3
+langchain-google-genai==2.0.4
+langchain-text-splitters==0.3.2
+langchain-qdrant==0.2.1
+
+# --- PDF Parsing ---
+pypdf==4.3.1
