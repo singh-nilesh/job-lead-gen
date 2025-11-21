@@ -5,6 +5,7 @@ Configuration file for motor Client
 '''
 
 from motor.motor_asyncio import AsyncIOMotorClient
+from functools import lru_cache
 from app.core.config import Settings
 from typing import AsyncGenerator
 from app.db.mongo import schema
@@ -13,14 +14,16 @@ from app.db.mongo import schema
 
 NOSQL_DATABASE_URL = Settings.MONGO_URL  # Full URL with DB
 print("MONGO URL",NOSQL_DATABASE_URL)
-client:AsyncIOMotorClient = None
+
+@lru_cache()
+def get_mongo_client() -> AsyncIOMotorClient:
+    return AsyncIOMotorClient(NOSQL_DATABASE_URL)
+
 
 # Dependency to get App database
 async def get_app_db() -> AsyncGenerator:
     """ Dependency to get MongoDB database """
-    global client
-    if client is None:
-        client = AsyncIOMotorClient(NOSQL_DATABASE_URL)
+    client = get_mongo_client()
     db = client.get_default_database()  # DB from url
     try:
         yield db

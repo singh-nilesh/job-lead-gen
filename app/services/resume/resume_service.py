@@ -1,17 +1,20 @@
 from motor.motor_asyncio import AsyncIOMotorClient
 from app.core.logger import service_logger as logger
-from pymongo.errors import PyMongoError, DuplicateKeyError, OperationFailure
+from langchain_qdrant import QdrantVectorStore
+
 from app.core.utils import set_user_id_all
 from .helpers import _insert_resume_sections
 
+
+
 class ResumeService:
-    def __init__(self, db:AsyncIOMotorClient):
+    ''' Service to handle Operation related to Resume'''
+    def __init__(self, db:AsyncIOMotorClient, VectorStore:QdrantVectorStore):
         self.db = db
+        self.vector_store = VectorStore
     
     def get_resume_collection(self):
         pass
-
-    
 
     async def _save_resume(self, resume: dict, user_id: int) -> bool:
         ''' Save resume to the App database (NOSQL) '''
