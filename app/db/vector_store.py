@@ -4,7 +4,7 @@ from qdrant_client.http.models import Distance, VectorParams
 from app.core.config import Settings, settings
 
 from langchain_qdrant import QdrantVectorStore
-from app.llm.embedding import GeminiEmbeddingsCustomDim
+from app.llm.embedding import get_embedding_model
 
 @lru_cache()
 def get_client():
@@ -29,14 +29,6 @@ def ensure_collection_exists ():
                 distance= Distance.COSINE
             )
         )
-
-@lru_cache()
-def get_embedding_model():
-    return GeminiEmbeddingsCustomDim(
-        model="models/gemini-embedding-001",
-        task_type="RETRIEVAL_QUERY",
-        output_dimensionality=Settings.QDRANT_DB_DIMENSION,
-    )
 
 
 # Langchain wrapper for Qdrant vector store

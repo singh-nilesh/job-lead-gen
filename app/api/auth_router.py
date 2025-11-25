@@ -71,7 +71,7 @@ def login(data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get
         "access_token": access_token,
         "token_type": "bearer",
         "user": {
-            "id": auth_user.id,
+            "id": str(auth_user.id),
             "email": auth_user.email
         }
     }

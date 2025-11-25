@@ -1,4 +1,7 @@
 from app.db.mongo import schema
+from typing import Any
+import inspect
+
 
 def set_user_id_all(resume: dict, user_id: int) -> dict:
     """
@@ -19,3 +22,10 @@ def set_user_id_all(resume: dict, user_id: int) -> dict:
                     item["user_id"] = user_id
 
     return resume
+
+
+async def get_if_awaitable(obj:Any) -> bool:
+    ''' Check if an object is awaitable (i.e., a coroutine) '''
+    if inspect.isawaitable(obj):
+        return await obj
+    return obj

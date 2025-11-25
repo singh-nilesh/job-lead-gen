@@ -2,7 +2,7 @@ from pydantic import BaseModel, Field
 from typing import Optional
 
 class Education(BaseModel):
-    user_id: int
+    user_id: str
     institution_name: str = Field(..., max_length=200)
     degree: str = Field(..., max_length=100)
     field_of_study: str = Field(..., max_length=100)

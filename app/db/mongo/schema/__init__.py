@@ -1,9 +1,16 @@
-from .education import Education
-from .work_exp import WorkExp as Work_experience
-from .profile import Profile
+''' Always export collection names in snake_case
+- Standardized naming for MongoDB collections
+'''
+from .education import Education as education
+from .work_experience import WorkExperience as work_experience
+from .profile import Profile as profile
+from .extra_curricular import ExtraCurricularActivity as extra_curricular
+from .projects import Project as projects
 
 __all__ = [
-    'Education', 
-    'Work_experience', 
-    'Profile'
+    "education",
+    "work_experience",
+    "profile",
+    "extra_curricular",
+    "projects",
 ]

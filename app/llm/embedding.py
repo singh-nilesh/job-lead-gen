@@ -1,4 +1,6 @@
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
+from functools import lru_cache
+from app.core.config import Settings
 from typing import Optional
 
 
@@ -37,3 +39,13 @@ class GeminiEmbeddingsCustomDim(GoogleGenerativeAIEmbeddings):
             title=title,
             output_dimensionality=output_dimensionality,
         )
+
+
+
+@lru_cache()
+def get_embedding_model():
+    return GeminiEmbeddingsCustomDim(
+        model="models/gemini-embedding-001",
+        task_type="RETRIEVAL_QUERY",
+        output_dimensionality=Settings.QDRANT_DB_DIMENSION,
+    )
