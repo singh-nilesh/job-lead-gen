@@ -14,6 +14,7 @@ from app.db.mongo import schema
 
 NOSQL_DATABASE_URL = Settings.MONGO_URL  # Full URL with DB
 print("MONGO URL",NOSQL_DATABASE_URL)
+client = None  # Global client variable
 
 @lru_cache()
 def get_mongo_client() -> AsyncIOMotorClient:

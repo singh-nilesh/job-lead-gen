@@ -62,7 +62,7 @@ def _construct_document(data: dict) -> list[Document]:
 
     documents = []
     # Store embedings for description fields only
-    embedd_for_coll= ["education", "work_experience","projects", "certifications"]
+    embedd_for_coll= ["work_experience","projects", "extra_curricular"]
     
     for coll_name, content in data.items():
 
@@ -74,9 +74,9 @@ def _construct_document(data: dict) -> list[Document]:
 
         # Extract items and their there DB IDs
         items:list[dict] = content.get('data')
-        ids:list[str] = [str(id) for id in content.get('_id')]
+        ids:list[str] = [str(id) for id in content.get('_ids')]
 
-        if not isinstance(items, list[dict]):
+        if not isinstance(items, list):
             continue
 
         # Process each item in the collection

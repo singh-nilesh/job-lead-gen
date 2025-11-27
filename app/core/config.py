@@ -25,3 +25,5 @@ class Settings:
     QDRANT_DB_DIMENSION = int(os.getenv("QDRANT_DB_DIMENSION", "384"))
 
     APP_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+    GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")

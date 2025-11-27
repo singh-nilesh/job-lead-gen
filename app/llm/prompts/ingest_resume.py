@@ -1,7 +1,7 @@
 
 ''' Prompt for ingesting and parsing resumes using LLMs '''
 from functools import lru_cache
-from langchain.prompts import ChatPromptTemplate
+from langchain.prompts import ChatPromptTemplate, HumanMessagePromptTemplate
 
 
 prompt_template = """
@@ -14,14 +14,14 @@ prompt_template = """
   - Extract only information explicitly present in the resume input.
   - Light rewriting is allowed for grammar, clarity, and ATS-friendly phrasing.
   - Do NOT invent missing sections; set them to null.
-  - professional_summary: Write a synthesized 80–100 word summary derived ONLY from available resume content.
+  - professional_summary: Write a synthesized 100-200 word summary derived ONLY from available resume content.
   - Work experience: Rewrite into 3–5 action-oriented, impact-focused bullets per job.
   - Projects: Extract and rewrite into 2–4 concise bullets per project.
   - Education, skills, certifications, extracurriculars: Extract only if present; otherwise return null.
   - Avoid first-person language.
   - Maintain professional and consistent tone.
 
-  Resume Input:
+  Resume Content:
   {resume_input}
 
 """
@@ -29,4 +29,6 @@ prompt_template = """
 
 @lru_cache()
 def get_ingest_resume_prompt() -> ChatPromptTemplate:
-    return ChatPromptTemplate(template=prompt_template)
+    return ChatPromptTemplate.from_messages([
+        HumanMessagePromptTemplate.from_template(prompt_template)
+    ])

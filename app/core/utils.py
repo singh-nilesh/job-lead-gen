@@ -3,7 +3,7 @@ from typing import Any
 import inspect
 
 
-def set_user_id_all(resume: dict, user_id: int) -> dict:
+def set_user_id_all(resume: dict, user_id: str) -> dict:
     """
     Auto-detects dict sections and list-of-dict sections,
     and sets user_id everywhere it appears.

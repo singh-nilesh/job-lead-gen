@@ -46,6 +46,7 @@ class GeminiEmbeddingsCustomDim(GoogleGenerativeAIEmbeddings):
 def get_embedding_model():
     return GeminiEmbeddingsCustomDim(
         model="models/gemini-embedding-001",
+        api_key=Settings.GOOGLE_API_KEY,
         task_type="RETRIEVAL_QUERY",
         output_dimensionality=Settings.QDRANT_DB_DIMENSION,
     )

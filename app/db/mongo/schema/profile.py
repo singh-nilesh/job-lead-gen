@@ -8,7 +8,7 @@ class Profile(BaseModel):
     location: str = Field(..., min_length=2, max_length=70)
     phone: str = Field(
         ...,
-        pattern=r'^\+91\s?[0-9]\d{10}$',
+        pattern=r'^\+91\s?[6-9]\d{9}$',
         description="Phone number must be entered in the format: '+91 9900114011' or '+919900114011'"
     )
     website: Optional[str] = Field(
@@ -26,15 +26,15 @@ class Profile(BaseModel):
         max_length=200,
         pattern=r'^(https?|ftp)://[^\s/$.?#].[^\s]*$'
     )
-    designation: Optional[list[str]] = Field(None, max_length=50)
-    professional_summary: Optional[str] = Field(None, max_length=500)
+    designation: Optional[list[str]] = Field(default=None, description="List of designations or job titles")
+    professional_summary: str = Field(None, max_length=1000)
 
-    skills: list[str] = Field(None, max_length=150,
+    skills: list[str] = Field(default=None,
                               description= '''
                                 List of skills, domain: details, eg.
                                 Cloud & DevOps: Docker Compose, Kubernetes, AWS, GitHub Actions
                                 Programming Languages: Python, JavaScript, TypeScript
                                 '''
                               )
-    certifications: Optional[list[str]] = Field(None, max_length=150)
+    certifications: Optional[list[str]] = Field(default=None, description="List of certifications")
     
