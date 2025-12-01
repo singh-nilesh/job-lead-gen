@@ -22,8 +22,10 @@ class Settings:
 
     QDRANT_URL = os.getenv("QDRANT_URL")
     QDRANT_COLLECTION_NAME = os.getenv("QDRANT_COLLECTION_NAME", "user_data_collection")
-    QDRANT_DB_DIMENSION = int(os.getenv("QDRANT_DB_DIMENSION", "384"))
+    QDRANT_DB_DIMENSION = int(os.getenv("QDRANT_DB_DIMENSION", "368"))
 
     APP_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-    GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+    GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY") 
+
+    ARTIFACTS_DIR = os.getenv("ARTIFACTS_DIR", os.path.join(APP_DIR, "core","artifacts"))

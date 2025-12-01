@@ -1,9 +1,12 @@
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
+import os
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, BackgroundTasks
+from fastapi.responses import FileResponse
 import tempfile
 
 from app.core.logger import api_logger as logger
-from app.services.resume import ResumeIngestionService
-from .factory_injection import get_resume_ingestion_service
+from app.core.exception import ServiceException
+from app.services.resume import ResumeIngestionService, ResumeGenerationService
+from .factory_injection import get_resume_ingestion_service, get_resume_generation_service
 
 
 
@@ -11,12 +14,40 @@ from .factory_injection import get_resume_ingestion_service
 router = APIRouter()
 
 @router.get("/generate")
-def get_resume(Job_context:str, resume_id: int):
-    """ Retrieve resume by ID """
-    # Log request
-    logger.info(f"get_resume called with Job_context={Job_context!r}, resume_id={resume_id}")
-    # Placeholder implementation
-    return {"resume_id": resume_id, "content": "Resume content goes here"}
+async def generate_resume(
+    user_id:str, 
+    job_data:str,
+    background_tasks: BackgroundTasks,
+    service: ResumeGenerationService = Depends(get_resume_generation_service)
+    ):
+    ''' Endpoint to generate a resume based on user data and job description '''
+    logger.info(f"generate_resume called for user_id={user_id}")
+
+    temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".docx")
+    output_path = temp_file.name
+    temp_file.close()
+
+    try:
+        resume_path =  await service.generate(
+            user_id=user_id, 
+            job_data=job_data, 
+            output_path=output_path
+            )
+        logger.info(f"Resume generated at {resume_path} for user_id={user_id}")
+        
+        # Sechudule file for deletion after response
+        background_tasks.add_task(os.remove, resume_path)
+
+        return FileResponse(
+            path=resume_path,
+            filename=f"resume_{user_id}.docx",
+            media_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        )
+    except ServiceException as se:
+        raise se
+    except Exception as e:
+        logger.error(f"Error generating resume for user_id={user_id}: {e}")
+        raise HTTPException(status_code=500, detail="Error generating resume")
 
 
 @router.post("/upload")
@@ -26,7 +57,6 @@ async def upload_resume(
     service: ResumeIngestionService = Depends(get_resume_ingestion_service)
     ):
     """ Endpoint to Ingest resume file into the system """
-    
     logger.info(f"upload_resume called for user_id={user_id}, filename={file.filename}")
 
     # Validate file type

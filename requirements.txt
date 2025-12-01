@@ -25,3 +25,7 @@ langchain-qdrant==0.2.1
 # --- PDF Parsing ---
 pymupdf
 python-docx
+
+# --- docx Parsing ---
+python-docx
+docxtpl

@@ -1,10 +1,12 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from app.db.postgres.sqlalchemyConfig import engine
 from app.core.config import Settings
 from app.api import include_routers
 from app.db.mongo.motorConfig import init_nosql_db
+from app.core.exception import ServiceException
 
 # initialize resources
 @asynccontextmanager
@@ -54,3 +56,10 @@ async def health_check():
 include_routers(app)
 
 
+# Custome service exception handeler
+@app.exception_handler(ServiceException)
+async def service_exception_handler(request: Request, exc: ServiceException):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"error": exc.message}
+    )

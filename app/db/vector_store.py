@@ -10,7 +10,6 @@ from app.core.logger import db_logger as logger
 @lru_cache()
 def get_client():
     ''' Returns the Qdrant client instance => client '''
-    logger.debug("Creating Qdrant client (url=%s)", Settings.QDRANT_URL)
     try:
         client = QdrantClient(
             url=Settings.QDRANT_URL,
@@ -27,7 +26,6 @@ def ensure_collection_exists ():
     client = get_client()
     name = Settings.QDRANT_COLLECTION_NAME
 
-    logger.debug("Ensuring Qdrant collection exists: %s", name)
     try:
         client.get_collection(name)
         logger.info("Qdrant collection '%s' already exists", name)
@@ -48,7 +46,6 @@ def ensure_collection_exists ():
 @lru_cache()
 def get_vector_store() -> QdrantVectorStore:
     ''' Returns the main vector store instance => vector_store '''
-    logger.debug("Initializing QdrantVectorStore for collection: %s", Settings.QDRANT_COLLECTION_NAME)
     try:
         ensure_collection_exists()
         vs = QdrantVectorStore(

@@ -55,9 +55,11 @@ class ServiceException(Exception):
         logger: Optional[logging.Logger] = None,
         error_details=None,
         level: str = "error",
+        status_code: int = 500,
     ):
         super().__init__(message)
         self.message = message
+        self.status_code = status_code
         self.error_details = error_details or sys
         self._default_level = level
 

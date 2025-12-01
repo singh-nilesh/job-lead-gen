@@ -1,4 +1,4 @@
-''' Resume Service File Helper Functions '''
+''' Service File Helper Functions '''
 
 import fitz
 import docx
@@ -51,7 +51,6 @@ def _extract_docx_text(path: str):
             out.append(f"(Link: {link_text} {url})")
 
     return "\n".join(out)
-
 
 
 

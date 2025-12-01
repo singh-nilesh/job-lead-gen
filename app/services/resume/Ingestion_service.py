@@ -1,15 +1,10 @@
-import json
-from typing import Any
-
 from motor.motor_asyncio import AsyncIOMotorClient
 from langchain_qdrant import QdrantVectorStore
 from langchain_core.output_parsers import PydanticOutputParser
 
 from app.core.logger import service_logger as logger
 from app.core.exception import ServiceException
-from app.core.utils import set_user_id_all, get_if_awaitable
-from .helpers.db_helpers import _insert_resume_sections, _construct_document
-from .helpers.file_helpers import _extract_pdf_text, _extract_docx_text
+from app.core.utils import get_if_awaitable, set_user_id_all, _insert_resume_sections, _extract_pdf_text, _extract_docx_text, _construct_document
 
 from app.llm.prompts.ingest_resume import get_ingest_resume_prompt
 from app.llm.schema import ResumeOutputSchema
@@ -17,8 +12,7 @@ from app.llm.models import get_llm_model
 
 
 class ResumeIngestionService:
-    """Resume Ingestion Service
-
+    """ Resume Ingestion Service
     Handles the ingestion of resumes into individual sections for better processing.
     """
 
@@ -28,7 +22,6 @@ class ResumeIngestionService:
 
     async def ingest(self, resume_filepath: str, user_id: str) -> bool:
         """Ingest the resume document into sections, process and store.
-
         Args:
             resume_filepath: The path to the resume document.
             user_id: The user ID associated with the resume.
@@ -43,41 +36,34 @@ class ResumeIngestionService:
             return False
 
         try:
-            # Extract text from resume
+            # Step 1: Extract text from resume
             text = self._extract_text(resume_filepath, user_id)
 
-            # LLM chain resume parser
+            # Step 2: Parse resume text using LLM chain
             resume_dict = await self._llm_parser(text)
 
-            # Save to APP database
+            # Step 3: Save to APP database
             id_dict = await self._save_resume(resume_dict, user_id)
 
-            # Compute and store vector embeddings
+            # Step 4: Compute and store vector embeddings
             res = await self._save_embeddings(id_dict)
 
             if res:
                 logger.info(f"Resume ingestion process completed successfully for user_id:{user_id}")
             return res
 
-        except ServiceException as se:
-            logger.error(f"ServiceException during resume ingestion: {se} for user_id:{user_id}")
-            return False
         except Exception as e:
             logger.error(f"Unexpected error during resume ingestion: {e} for user_id:{user_id}")
-            return False
+            raise ServiceException("Resume ingestion failed.", logger=logger)
 
 
     async def _llm_parser(self, text: str) -> dict:
         """Parse the resume text into structured format using LLMs."""
         logger.info("Parsing resume text using LLM chain.")
 
-        # pydantic output parser
         parser = PydanticOutputParser(pydantic_object=ResumeOutputSchema)
-
-        # Get LLM model
         llm = get_llm_model()
 
-        # Prompt construction
         prompt = get_ingest_resume_prompt()
         prompt = prompt.partial(format_instructions=parser.get_format_instructions())
 
@@ -139,10 +125,38 @@ class ResumeIngestionService:
         if not documents:
             logger.error("No documents constructed for embedding storage.")
             return False
-
+        
+        # ---------- Log vector store details
         try:
-            # Conditional await for async or sync method
-            await get_if_awaitable(self.vector_store.add_documents(documents))
+            logger.debug(f"VectorStore Type: {type(self.vector_store)}")
+            logger.debug(f"Collection Name: {self.vector_store.collection_name}")
+
+            # Log Qdrant client connection details
+            client = self.vector_store.client
+            logger.debug(f"Qdrant Client: {client}")
+            logger.debug(f"Qdrant Host: {getattr(client, 'host', None)}")
+            logger.debug(f"Qdrant Port: {getattr(client, 'port', None)}")
+            logger.debug(f"Qdrant URL: {getattr(client, 'url', None)}")
+
+            # Log embedding model used
+            logger.debug(f"Embedding Model: {self.vector_store.embeddings}")
+            first_emb = self.vector_store.embeddings.embed_query(documents[0].page_content)
+            logger.debug(f"Embedding dimension: {len(first_emb)}")
+
+            # Log collection parameters (very useful)
+            try:
+                collection_info = client.get_collection(self.vector_store.collection_name)
+                logger.debug(f"Collection Info: {collection_info}")
+            except Exception as e:
+                logger.warning(f"Unable to fetch collection info: {e}")
+
+        except Exception as e:
+            logger.error(f"Error while logging vector store details: {e}")
+        # ------------- End ---------
+        
+        try:
+            result = self.vector_store.add_documents(documents)
+            logger.debug(f"VectorStore.add_documents() returned: {result}")
             logger.info("Successfully saved vector embeddings for resume sections.")
             return True
         except Exception as e:
