@@ -1,6 +1,7 @@
 ''' Generate DOCX from Text '''
 
 from docxtpl import DocxTemplate, RichText
+from docx.shared import Pt
 from docx import Document
 
 from app.core.config import Settings
@@ -13,6 +14,7 @@ def _parse_to_docx(resume_data:dict, output_path:str = None, user_id: str = None
 
     print(f" template path: {Settings.ARTIFACTS_DIR}/resume_template.2.0.docx")
     
+    # Load Template
     template = DocxTemplate(f"{Settings.ARTIFACTS_DIR}/resume_template.2.0.docx")
 
     # Process profile contanct details
@@ -41,9 +43,16 @@ def _parse_to_docx(resume_data:dict, output_path:str = None, user_id: str = None
     # clean empty line
     doc = Document(output_path)
     for para in doc.paragraphs:
+
+        # remove empty paragraphs
         if not para.text.strip():
             p = para._element
             p.getparent().remove(p)
+            continue
+
+        # tighten bullet paragraphs
+        if _is_bullet_paragraph(para):
+            _tighten_bullet_paragraph(para)
     
     # final save
     doc.save(output_path)
@@ -52,6 +61,54 @@ def _parse_to_docx(resume_data:dict, output_path:str = None, user_id: str = None
 
 
 
+def _is_bullet_paragraph(p):
+    """
+    Detect bullet list paragraphs. - list info in <w:numPr>.
+    """
+    try:
+        return p._p.pPr is not None and p._p.pPr.numPr is not None
+    except:
+        return False
+
+
+def _tighten_bullet_paragraph(p):
+    fmt = p.paragraph_format
+    fmt.space_after = Pt(0)      # remove extra space after bullet
+
+
+def _build_contact_line(template, profile: dict):
+    rt = RichText()
+
+    items = [
+        (profile.get("location"), None, False),
+        ("Github", profile.get("github"), True),
+        (profile.get("phone"), None, False),
+        (profile.get("email"), f"mailto:{profile.get('email')}", True),
+        ("LinkedIn", profile.get("linkedin"), True),
+    ]
+
+    first = True
+    for label, url, is_link in items:
+        if not label:
+            continue
+
+        if not first:
+            rt.add("  |  ", font="Times New Roman")
+        first = False
+
+        if is_link and url:
+            rt.add(
+                label,
+                url_id=template.build_url_id(url),
+                font="Times New Roman",
+                color="0000FF"
+            )
+        else:
+            rt.add(label, font="Times New Roman")
+
+    return rt
+
+'''
 def _build_contact_line(template, profile):
     rt = RichText()
 
@@ -84,3 +141,4 @@ def _build_contact_line(template, profile):
             rt.add(value)
 
     return rt
+'''

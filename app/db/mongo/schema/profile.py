@@ -26,7 +26,6 @@ class Profile(BaseModel):
         max_length=200,
         pattern=r'^(https?|ftp)://[^\s/$.?#].[^\s]*$'
     )
-    designation: Optional[list[str]] = Field(default=None, description="List of designations or job titles")
     professional_summary: str = Field(None, max_length=1000)
 
     skills: list[str] = Field(default=None,

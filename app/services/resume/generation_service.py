@@ -115,7 +115,6 @@ class ResumeGenerationService:
             raise ServiceException("Failed to retrieve user data from main_db.", logger=logger)
         
         logger.info(f"User data retrieved successfully for resume generation. {len(result)} records found.")
-        logger.debug(f"User data for resume generation: {result}")
         return result
 
 
@@ -136,6 +135,7 @@ class ResumeGenerationService:
                 raise ServiceException("LLM failed to generate resume content.", logger=logger)
             
             logger.info("Resume content generated successfully using LLM.")
+            logger.debug(f"Generated Resume Content: {res}")
             return res.dict()
 
         except Exception as e:
