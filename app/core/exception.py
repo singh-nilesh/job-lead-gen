@@ -2,6 +2,7 @@
 import sys
 import logging
 from typing import Optional
+from app.core.logger import service_logger
 
 
 def error_message_detail(error, error_detail=None):
@@ -54,14 +55,20 @@ class ServiceException(Exception):
         logger: Optional[logging.Logger] = None,
         error_details=None,
         level: str = "error",
+        status_code: int = 500,
     ):
         super().__init__(message)
         self.message = message
+        self.status_code = status_code
         self.error_details = error_details or sys
         self._default_level = level
-        # only log if a logger was provided
-        if logger is not None:
-            self.log(logger, level)
+
+        # use provided logger or fall back to global service_logger
+        self.logger = logger if logger is not None else service_logger
+
+        # always log using the resolved logger
+        if self.logger is not None:
+            self.log(self.logger, level)
 
     def __str__(self):
         return self.message
@@ -80,18 +87,6 @@ class ServiceException(Exception):
             logger.error(self.formatted_message(), exc_info=True)
 
 
-class AlreadyExistsException(ServiceException):
-    """ Raised when attempting to create a resource that already exists. """
-    pass
-
-class NotFoundException(ServiceException):
-    """ Raised when a requested resource is not found. """
-    pass
-
-class DatabaseException(ServiceException):
-    """ Raised for database-related errors. """
-    pass
-
 
 
 # Example test block
@@ -101,6 +96,6 @@ if __name__ == "__main__":
     except Exception as e:
         #logging.info("Divide by Zero")
         raise CustomException("DDivide by Zero")
-    
+
 
 

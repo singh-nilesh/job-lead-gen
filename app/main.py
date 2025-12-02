@@ -1,24 +1,30 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from app.db.sqlalchemyConfig import engine
+from fastapi.responses import JSONResponse
+from app.db.postgres.sqlalchemyConfig import engine
 from app.core.config import Settings
 from app.api import include_routers
+from app.db.mongo.motorConfig import init_nosql_db
+from app.core.exception import ServiceException
 
 # initialize resources
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # startup code
-    from app.db import schema
+    from app.db.postgres.schema import Users
     print(f"Creating DB tables... in {Settings.MODE} mode")
-    schema.Base.metadata.create_all(bind=engine)
+    Users.metadata.create_all(bind=engine)
+
+    await init_nosql_db()
+    print("Main database initialized.")
 
     yield
     
     # shutdown code
     print("Shutting down...")
     if Settings.MODE == 'test':
-        from app.db.sqlalchemyConfig import teardown_db
+        from app.db.postgres.sqlalchemyConfig import teardown_db
         print("Tearing down test database...")
         teardown_db()
 
@@ -50,3 +56,10 @@ async def health_check():
 include_routers(app)
 
 
+# Custome service exception handeler
+@app.exception_handler(ServiceException)
+async def service_exception_handler(request: Request, exc: ServiceException):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"error": exc.message}
+    )

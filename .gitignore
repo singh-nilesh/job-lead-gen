@@ -1,9 +1,11 @@
 # dev-specific ignores
-/infra/mongodata/
+/infra/mongo/mongodata/
 /infra/pgdata/
+/infra/qdrant_data/
 
 # Ignore .vscode settings folder
 .vscode/
+.idea/
 
 # Ignore everything inside tests/
 tests/**/*

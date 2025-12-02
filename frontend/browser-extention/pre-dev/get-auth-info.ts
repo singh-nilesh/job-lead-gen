@@ -26,13 +26,20 @@ async function login() {
   const username = "user@dev.com"; // predefined dev user
   const password = "passdev123";
 
-  const res = await axios.post(
-    `${BACKEND_URL}/auth/login`,
-    new URLSearchParams({ username, password }),
-    { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
-  );
+  try {
+    const res = await axios.post(
+      `${BACKEND_URL}/auth/login`,
+      new URLSearchParams({ username, password }),
+      { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
+    );
 
-  return res.data;
+    return res.data;
+  } catch (error: any) {
+    if (error.response?.status === 400 || error.response?.status === 401) {
+      throw new Error("DEV_USER_NOT_REGISTERED");
+    }
+    throw error;
+  }
 }
 
 // Helper to set or update env variable
@@ -69,14 +76,28 @@ function setEnvValue(content: string, key: string, value: string) {
 
   console.log("Token invalid. Logging in...");
 
-  const { access_token, user } = await login();
+  try {
+    const { access_token, user } = await login();
 
-  // Update only the two DEV variables
-  let updatedContent = envContent;
-  updatedContent = setEnvValue(updatedContent, "WXT_DEV_TOKEN", access_token);
-  updatedContent = setEnvValue(updatedContent, "WXT_DEV_USER", `'${JSON.stringify(user)}'`);
+    // Update only the two DEV variables
+    let updatedContent = envContent;
+    updatedContent = setEnvValue(updatedContent, "WXT_DEV_TOKEN", access_token);
+    updatedContent = setEnvValue(updatedContent, "WXT_DEV_USER", `'${JSON.stringify(user)}'`);
 
-  fs.writeFileSync(ENV_FILE, updatedContent);
+    fs.writeFileSync(ENV_FILE, updatedContent);
 
-  console.log("Updated .env.development");
+    console.log("Updated .env.development");
+  } catch (error: any) {
+    if (error.message === "DEV_USER_NOT_REGISTERED") {
+      console.log("Dev user not registered");
+      
+      // Set dev token to null
+      let updatedContent = envContent;
+      updatedContent = setEnvValue(updatedContent, "WXT_DEV_TOKEN", "");
+      
+      fs.writeFileSync(ENV_FILE, updatedContent);
+    } else {
+      throw error;
+    }
+  }
 })();
