@@ -6,14 +6,15 @@ import tempfile
 from app.core.logger import api_logger as logger
 from app.core.exception import ServiceException
 from app.services.resume import ResumeIngestionService, ResumeGenerationService
-from .factory_injection import get_resume_ingestion_service, get_resume_generation_service
+from app.services.cover_letter import CoverLetterService
+from .factory_injection import get_resume_ingestion_service, get_resume_generation_service, get_cover_letter_service
 
 
 
 
 router = APIRouter()
 
-@router.get("/generate")
+@router.get("/generate_resume")
 async def generate_resume(
     user_id:str, 
     job_data:str,
@@ -50,7 +51,7 @@ async def generate_resume(
         raise HTTPException(status_code=500, detail="Error generating resume")
 
 
-@router.post("/upload")
+@router.post("/upload_resume")
 async def upload_resume(
     user_id: str,
     file:UploadFile = File(..., description="Upload resume file (PDF or DOCX)"), 
@@ -82,3 +83,42 @@ async def upload_resume(
         raise HTTPException(status_code=500, detail="Error ingesting resume")
            
     return {"resume": file.filename, "status": "Resume uploaded successfully"}
+
+
+@router.get("/generate_cover_letter")
+async def generate_cover_letter(
+    user_id:str,
+    job_data:str,
+    background_tasks: BackgroundTasks,
+    personalization_input:str = "",
+    service: CoverLetterService = Depends(get_cover_letter_service)
+    ):
+    ''' Endpoint to generate a cover letter based on user data and job description '''
+    logger.info(f"generate_cover_letter called for user_id={user_id}")
+
+    temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".docx")
+    output_path = temp_file.name
+    temp_file.close()
+
+    try:
+        cover_letter_path =  await service.generate_from_text(
+            user_id=user_id, 
+            job_data=job_data, 
+            file_path=output_path,
+            user_personalized_input=personalization_input
+            )
+        logger.info(f"Cover letter generated at {cover_letter_path} for user_id={user_id}")
+        
+        # Sechudule file for deletion after response
+        background_tasks.add_task(os.remove, cover_letter_path)
+
+        return FileResponse(
+            path=cover_letter_path,
+            filename=f"cover_letter_{user_id}.docx",
+            media_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        )
+    except ServiceException as se:
+        raise se
+    except Exception as e:
+        logger.error(f"Error generating cover letter for user_id={user_id}: {e}")
+        raise HTTPException(status_code=500, detail="Error generating cover letter")

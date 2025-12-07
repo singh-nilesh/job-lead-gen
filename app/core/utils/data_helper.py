@@ -4,7 +4,7 @@ import re
 from bson import ObjectId
 from langchain.docstore.document import Document
 from app.core.logger import service_logger as logger
-
+from langchain.load import dumps, loads
 
 
 def _construct_document(data: dict) -> list[Document]:
@@ -103,6 +103,15 @@ def _filter_unique_ids(docs:list[Document]) -> dict[str, list[ObjectId]]:
         results[section].append(ObjectId(db_id))
 
     return results
+ 
+
+def _get_unique_union(documents: list[list]):
+    """ Unique union of retrieved docs """
+    # Flatten list of lists, and convert each Document to string
+    flattened_docs = [dumps(doc) for sublist in documents for doc in sublist]
+    # unique set
+    unique_docs = list(set(flattened_docs))
+    return [loads(doc) for doc in unique_docs]
 
 
 def _find_section_boundaries(text:str, section_titles:list[str] = None) -> dict:

@@ -7,6 +7,7 @@ from app.db.mongo.motorConfig import get_app_db
 from app.db.vector_store import get_vector_store
 
 
+from app.services.cover_letter import CoverLetterService
 from app.services.resume import ResumeIngestionService
 from app.services.resume.generation_service import ResumeGenerationService
 
@@ -29,3 +30,14 @@ def get_resume_generation_service(
 
     """ Dependency injector for ResumeGenerationService """
     return ResumeGenerationService(db=db, vector_store=vector_store)
+
+
+@lru_cache()
+def get_cover_letter_service(
+    db=Depends(get_app_db), 
+    vector_store=Depends(get_vector_store)
+    ) -> 'CoverLetterService':
+
+    """ Dependency injector for CoverLetterService """
+    from app.services.cover_letter import CoverLetterService
+    return CoverLetterService(db=db, vector_store=vector_store)

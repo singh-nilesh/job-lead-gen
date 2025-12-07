@@ -61,13 +61,13 @@ class ResumeIngestionService:
         """Parse the resume text into structured format using LLMs."""
         logger.info("Parsing resume text using LLM chain.")
 
-        parser = PydanticOutputParser(pydantic_object=ResumeOutputSchema)
+        # llm chain
         llm = get_llm_model()
-
-        prompt = get_ingest_resume_prompt()
-        prompt = prompt.partial(format_instructions=parser.get_format_instructions())
-
-        # Langchain LLM chain
+        parser = PydanticOutputParser(pydantic_object=ResumeOutputSchema)
+        prompt = get_ingest_resume_prompt().partial(
+            format_instructions=parser.get_format_instructions()
+            )
+        
         extract_chain = prompt | llm | parser
 
         # Invoke the chain (async)
@@ -126,37 +126,8 @@ class ResumeIngestionService:
             logger.error("No documents constructed for embedding storage.")
             return False
         
-        # ---------- Log vector store details
-        try:
-            logger.debug(f"VectorStore Type: {type(self.vector_store)}")
-            logger.debug(f"Collection Name: {self.vector_store.collection_name}")
-
-            # Log Qdrant client connection details
-            client = self.vector_store.client
-            logger.debug(f"Qdrant Client: {client}")
-            logger.debug(f"Qdrant Host: {getattr(client, 'host', None)}")
-            logger.debug(f"Qdrant Port: {getattr(client, 'port', None)}")
-            logger.debug(f"Qdrant URL: {getattr(client, 'url', None)}")
-
-            # Log embedding model used
-            logger.debug(f"Embedding Model: {self.vector_store.embeddings}")
-            first_emb = self.vector_store.embeddings.embed_query(documents[0].page_content)
-            logger.debug(f"Embedding dimension: {len(first_emb)}")
-
-            # Log collection parameters (very useful)
-            try:
-                collection_info = client.get_collection(self.vector_store.collection_name)
-                logger.debug(f"Collection Info: {collection_info}")
-            except Exception as e:
-                logger.warning(f"Unable to fetch collection info: {e}")
-
-        except Exception as e:
-            logger.error(f"Error while logging vector store details: {e}")
-        # ------------- End ---------
-        
         try:
             result = self.vector_store.add_documents(documents)
-            logger.debug(f"VectorStore.add_documents() returned: {result}")
             logger.info("Successfully saved vector embeddings for resume sections.")
             return True
         except Exception as e:
