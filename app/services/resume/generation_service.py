@@ -48,7 +48,7 @@ class ResumeGenerationService:
             user_data = await self._query_user_data(user_id, processed_job_data)
             
             # Step 3: Generate resume content using LLM
-            resume_content = await self._llm_resume_generation(user_data)
+            resume_content = await self._llm_resume_generation(user_data, processed_job_data)
 
             # Step 4: Convert resume content to DOCX
             docx_path = _parse_to_docx(resume_content, output_path, user_id)
@@ -70,8 +70,9 @@ class ResumeGenerationService:
         # LLM chain to processs job data
         parser = PydanticOutputParser(pydantic_object=JobDescription)
         llm = get_llm_model()
-        prompt = get_ingest_job_data_prompt()
-        prompt = prompt.partial(format_instructions=parser.get_format_instructions())
+        prompt = get_ingest_job_data_prompt().partial(
+            format_instructions=parser.get_format_instructions()
+            )
 
         chain = prompt | llm | parser
 
@@ -118,16 +119,18 @@ class ResumeGenerationService:
         return result
 
 
-    async def _llm_resume_generation(self, user_data:list) -> str:
+    async def _llm_resume_generation(self, user_data:list, job_data:str) -> str:
         """ Use LLM to generate resume content based on user data."""
         logger.info("Generating resume content using LLM.")
 
         try: # LLM chain for resume generation
-            parser = PydanticOutputParser(pydantic_object=ResumeOutputSchema)
-            prompt = get_generate_resume_prompt()
-            prompt = prompt.partial(format_instructions=parser.get_format_instructions())
-
             llm = get_llm_model()
+            parser = PydanticOutputParser(pydantic_object=ResumeOutputSchema)
+            prompt = get_generate_resume_prompt().partial(
+                format_instructions=parser.get_format_instructions(),
+                job_posting = job_data
+                )
+
             chain = prompt | llm | parser
 
             res = await chain.ainvoke({"user_data": user_data})
