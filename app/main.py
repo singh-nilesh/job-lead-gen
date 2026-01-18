@@ -7,17 +7,25 @@ from app.core.config import Settings
 from app.api import include_routers
 from app.db.mongo.motorConfig import init_nosql_db
 from app.core.exception import ServiceException
+from app.db.object_store import ensure_bucket_exists
+
+
 
 # initialize resources
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # startup code
+    # init postgress
     from app.db.postgres.schema import Users
     print(f"Creating DB tables... in {Settings.MODE} mode")
     Users.metadata.create_all(bind=engine)
 
+    # init mongo
     await init_nosql_db()
     print("Main database initialized.")
+
+    # init object-store
+    ensure_bucket_exists()
+
 
     yield
     

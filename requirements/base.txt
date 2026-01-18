@@ -1,0 +1,23 @@
+pydantic==2.12.2
+
+# --- db Client & ORM ---
+SQLAlchemy==2.0.36
+psycopg[binary]==3.2.3
+motor==3.6.0
+boto3==1.42.30
+qdrant-client==1.12.1 # compatible with numpy <2
+
+# --- LangChain Ecosystem ---
+langchain==0.3.8
+langchain-google-genai==2.0.4
+langchain-qdrant==0.2.1
+
+# --- PDF & docx Parsing ---
+pymupdf
+python-docx
+docxtpl==0.20.2
+
+# -- tasks and Scheduling
+celery==5.6.2
+redis==7.1.0
+

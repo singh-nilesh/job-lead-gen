@@ -11,6 +11,7 @@ services:
     volumes:
       - ./infra/pgdata:/var/lib/postgresql/data
 
+
   mongodb-service:
     build:
       context: ./infra/mongo
@@ -37,24 +38,71 @@ services:
       - "6333:6333"
     volumes:
       - ./infra/qdrant_data:/qdrant/storage:z
+  
+
+  minio-service:
+    image: minio/minio:latest
+    container_name: dev_minio_service
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    command: server /data --console-address ":9001"
+    volumes:
+      - ./infra/minio_data:/data
+  
+  redis-broker:
+    image: redis:7.2-alpine
+    container_name: dev_redis_broker
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./infra/redis_data:/data
+
+
+# ------- Build Python runtime Base Image -------
+  base:
+    build:
+      context: .
+      dockerfile: infra/docker/base.dockerfile
+    image: python_base:latest
     
 
-  
+  # web-app
   fastapi-app:
     build:  
       context: .
-      dockerfile: infra/fastapi.dockerfile
+      dockerfile: infra/docker/api.dockerfile
+      additional_contexts:
+        python_runtime: service:base
     container_name: dev_fastapi_app
     ports:
       - "8000:8000"
     depends_on:
+      - base
       - postgres-service
       - mongodb-service
       - qdrant-service
+      - minio-service
+      - redis-broker
     volumes:
       - ./app:/code/app
       - ./logs:/code/logs
     env_file:
       - .env
-    
-
+  
+  # Celery worker
+  worker:
+    build:
+      context: .
+      dockerfile: infra/docker/worker.dockerfile
+      additional_contexts:
+        python_runtime: service:base
+    container_name: dev_celery_worker
+    depends_on:
+      - base
+      - redis-broker
+    env_file:
+      - .env

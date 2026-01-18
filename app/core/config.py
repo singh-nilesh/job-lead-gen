@@ -24,8 +24,20 @@ class Settings:
     QDRANT_COLLECTION_NAME = os.getenv("QDRANT_COLLECTION_NAME", "user_data_collection")
     QDRANT_DB_DIMENSION = int(os.getenv("QDRANT_DB_DIMENSION", "368"))
 
+    CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL")
+    CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND")
+    
+
     APP_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
     GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY") 
 
     ARTIFACTS_DIR = os.getenv("ARTIFACTS_DIR", os.path.join(APP_DIR, "core","artifacts"))
+
+class S3Settings:
+    BUCKET_NAME = os.getenv("S3_BUCKET_NAME")
+    ACCESS_KEY = os.getenv("S3_ACCESS_KEY")
+    SECRET_KEY = os.getenv("S3_SECRET_KEY")
+    REGION_NAME = os.getenv("S3_REGION_NAME", "us-east-1")
+    PUBLIC_ENDPOINT_URL = os.getenv("S3_PUBLIC_ENDPOINT_URL")
+    INTERNAL_ENDPOINT_URL = os.getenv("S3_INTERNAL_ENDPOINT_URL")

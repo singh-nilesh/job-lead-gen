@@ -27,7 +27,7 @@ class ResumeGenerationService:
         self.vector_store = vector_store
     
 
-    async def generate(self, user_id:str, job_data:str, output_path:str, job_url:str = None) -> File:
+    async def generate(self, user_id:str, job_data:str, output_path:str, job_url:str = None) -> str:
         """Generate a resume document based on user data and job description.
         Args:
             user_id: The user ID for whom the resume is to be generated.

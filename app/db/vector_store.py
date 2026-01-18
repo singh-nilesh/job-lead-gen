@@ -22,7 +22,9 @@ def get_client():
         logger.error("Failed to create Qdrant client: %s", e)
         raise
 
+
 def ensure_collection_exists ():
+    ''' Vector-store init - app startup'''
     client = get_client()
     name = Settings.QDRANT_COLLECTION_NAME
 

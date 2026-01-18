@@ -2,6 +2,7 @@
 /infra/mongo/mongodata/
 /infra/pgdata/
 /infra/qdrant_data/
+/infra/redis_data/
 
 # Ignore .vscode settings folder
 .vscode/
