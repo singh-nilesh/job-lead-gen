@@ -1,0 +1,43 @@
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pytest_cache
+.mypy_cache
+
+# Virtual environments
+venv/
+.venv/
+
+# Env files
+.env
+.env.*
+
+# Logs
+logs/
+
+# Local DB / storage data
+infra/pgdata/
+infra/mongo/mongodata/
+infra/redis_data/
+infra/qdrant_data/
+infra/minio_data/
+
+# Node / frontend (if any)
+node_modules/
+
+# OS
+.DS_Store
+Thumbs.db
+
+
+# dev
+.vscode/
+.idea/
+.pytest_cache
+.cache/

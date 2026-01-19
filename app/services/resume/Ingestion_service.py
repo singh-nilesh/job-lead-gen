@@ -1,4 +1,4 @@
-from motor.motor_asyncio import AsyncIOMotorClient
+from motor.motor_asyncio import AsyncIOMotorDatabase
 from langchain_qdrant import QdrantVectorStore
 from langchain_core.output_parsers import PydanticOutputParser
 
@@ -16,7 +16,7 @@ class ResumeIngestionService:
     Handles the ingestion of resumes into individual sections for better processing.
     """
 
-    def __init__(self, db: AsyncIOMotorClient, vector_store: QdrantVectorStore):
+    def __init__(self, db: AsyncIOMotorDatabase, vector_store: QdrantVectorStore):
         self.db = db
         self.vector_store = vector_store
 
@@ -41,6 +41,8 @@ class ResumeIngestionService:
 
             # Step 2: Parse resume text using LLM chain
             resume_dict = await self._llm_parser(text)
+
+            logger.debug(f"Parsed resume dict: {resume_dict} for user_id:{user_id}")
 
             # Step 3: Save to APP database
             id_dict = await self._save_resume(resume_dict, user_id)

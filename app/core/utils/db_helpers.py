@@ -1,11 +1,11 @@
 """ Service Helper Functions """
 
 from app.core.logger import service_logger as logger
-from motor.motor_asyncio import AsyncIOMotorClient
+from motor.motor_asyncio import AsyncIOMotorDatabase
 from pymongo.errors import PyMongoError
 
 
-async def _insert_resume_sections(db: AsyncIOMotorClient, data: dict):
+async def _insert_resume_sections(db: AsyncIOMotorDatabase, data: dict):
     ''' 
     Insert multiple resume sections into their respective collections (main_db)
     Auto-detects:
@@ -51,7 +51,7 @@ async def _insert_resume_sections(db: AsyncIOMotorClient, data: dict):
         return False
 
 
-async def _get_user_data(db_ids:dict, user_id:str, db: AsyncIOMotorClient):
+async def _get_user_data(db_ids:dict, user_id:str, db: AsyncIOMotorDatabase):
     ''' Retrieve complete user data from main DB based on provided IDs.
     args:
         db_ids: {section: list of ObjectId}

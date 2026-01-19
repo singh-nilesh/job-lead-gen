@@ -1,8 +1,6 @@
 
-import datetime
-from fastapi import File
 from langchain_qdrant import QdrantVectorStore
-from motor.motor_asyncio import AsyncIOMotorClient
+from motor.motor_asyncio import AsyncIOMotorDatabase
 from langchain_core.output_parsers import PydanticOutputParser
 
 from app.llm.prompts.ingest_job_data import get_ingest_job_data_prompt
@@ -22,12 +20,12 @@ class ResumeGenerationService:
     """ Resume Generation Service
     Handles the generation of resumes based on user data and job descriptions.
     """
-    def __init__(self, db: AsyncIOMotorClient, vector_store: QdrantVectorStore):
+    def __init__(self, db: AsyncIOMotorDatabase, vector_store: QdrantVectorStore):
         self.db = db
         self.vector_store = vector_store
     
 
-    async def generate(self, user_id:str, job_data:str, output_path:str, job_url:str = None) -> File:
+    async def generate(self, user_id:str, job_data:str, output_path:str, job_url:str = None) -> str:
         """Generate a resume document based on user data and job description.
         Args:
             user_id: The user ID for whom the resume is to be generated.
