@@ -1,12 +1,12 @@
 """API package for routers"""
 
 from .auth_router import router as auth
-from .docs.base import router as docs_base
+from .docs.router import router as docs
 
 
-__all__ = ["auth", "docs_base"]
+__all__ = ["auth", "docs"]
 
 def include_routers(app):
     """Include all routers in the FastAPI app"""
     app.include_router(auth, prefix="/auth", tags=["auth"])
-    app.include_router(docs_base, prefix="/docs", tags=["documents"])
+    app.include_router(docs, prefix="/docs")

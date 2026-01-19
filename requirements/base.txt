@@ -1,4 +1,5 @@
 pydantic==2.12.2
+dotenv
 
 # --- db Client & ORM ---
 SQLAlchemy==2.0.36

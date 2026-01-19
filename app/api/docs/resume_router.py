@@ -1,6 +1,4 @@
-import os
-from .base import router
-from fastapi import Depends, HTTPException, UploadFile, File, BackgroundTasks
+from fastapi import APIRouter, HTTPException, UploadFile, File
 from app.tasks.interface import AsyncTaskResult
 
 from app.core.logger import api_logger as logger
@@ -9,9 +7,12 @@ from app.tasks import ingest_resume, generate_resume
 from app.core.utils import generate_file_id
 
 
+router = APIRouter(
+    prefix="/resume",
+    tags=["resume"]
+)
 
-
-@router.get("/generate_resume", response_model=AsyncTaskResult)
+@router.get("/generate", response_model=AsyncTaskResult)
 async def generate_resume(
     user_id:str, 
     job_data:str,
@@ -37,7 +38,7 @@ async def generate_resume(
     
 
 
-@router.post("/upload_resume", response_model=AsyncTaskResult)
+@router.post("/upload", response_model=AsyncTaskResult)
 async def upload_resume(
     user_id: str,
     file:UploadFile = File(..., description="Upload resume file (PDF or DOCX)"), 

@@ -1,8 +1,9 @@
 import os
 import tempfile
+import asyncio
 from app.core.exception import CustomException
 from app.core.celery_config import celery_app
-from app.core.factory_injection import get_resume_ingestion_service, get_resume_generation_service
+from app.core.task_factory_injection import get_resume_ingestion_service, get_resume_generation_service
 from app.db.s3_adapters import ObjectStorage
 from app.tasks.interface import file_payload, failure_meta, success_meta
 from celery.exceptions import Ignore
@@ -15,7 +16,6 @@ def ingest_resume(self, file_id: str, file_ext:str = ".pdf") -> None:
     
     s3_client = ObjectStorage()
     service = get_resume_ingestion_service()
-
     local_file_path = None
     try:
         with tempfile.NamedTemporaryFile(delete=False, suffix=file_ext) as temp_file:
@@ -25,7 +25,7 @@ def ingest_resume(self, file_id: str, file_ext:str = ".pdf") -> None:
         # Download file from S3 to temp location
         if not s3_client.download(
             file_id=file_id,
-            download_path=local_file_path
+            download_file_path=local_file_path
         ):
             self.update_state(
                 state='FAILURE', 
@@ -35,11 +35,14 @@ def ingest_resume(self, file_id: str, file_ext:str = ".pdf") -> None:
             ))
             raise Ignore() # permanent failure, no retries
         
-        # Ingest resume
-        if not service.ingest(
-            resume_filepath=local_file_path,
-            user_id=f" CeleryTask-{self.request.id} "
-        ):
+        # async Ingest resume
+        ok = asyncio.run(
+            service.ingest(
+                resume_filepath=local_file_path,
+                user_id=f"CeleryTask-{self.request.id}"
+                ))
+        
+        if not ok:
             self.update_state(
                 state='FAILURE',
                 meta=failure_meta(
@@ -94,12 +97,13 @@ def generate_resume(self, job_data: str, file_id:str) -> None:
             local_file_path = temp_file.name
         temp_file.close()
 
-        # generate resume
-        output_path = service.generate(
-            user_id= f"{self.request.id}",
-            job_data= job_data,
-            output_path= local_file_path
-        )
+        # async generate resume
+        output_path = asyncio.run(
+            service.generate(
+                user_id= f"{self.request.id}",
+                job_data= job_data,
+                output_path= local_file_path
+                ))
 
         # Upload the file to object store
         if not s3.upload_file(

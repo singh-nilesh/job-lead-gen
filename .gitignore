@@ -3,6 +3,7 @@
 /infra/pgdata/
 /infra/qdrant_data/
 /infra/redis_data/
+/infra/minio_data/
 
 # Ignore .vscode settings folder
 .vscode/

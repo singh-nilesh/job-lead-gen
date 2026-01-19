@@ -2,7 +2,7 @@
 
 from functools import lru_cache
 
-from app.db.mongo.motorConfig import get_app_db
+from app.db.mongo.motorConfig import get_mongo_client
 from app.db.vector_store import get_vector_store
 
 from app.services.cover_letter import CoverLetterService
@@ -11,7 +11,11 @@ from app.services.resume import ResumeIngestionService, ResumeGenerationService
 
 @lru_cache()
 def get_worker_deps():
-    db = get_app_db()
+    
+    # Celery task does not support async dependencies, so we create sync versions here
+    client = get_mongo_client()
+    db = client.get_default_database()
+
     vector_store = get_vector_store()
     return db, vector_store
 

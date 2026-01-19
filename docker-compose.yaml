@@ -53,7 +53,7 @@ services:
     volumes:
       - ./infra/minio_data:/data
   
-  redis-broker:
+  broker:
     image: redis:7.2-alpine
     container_name: dev_redis_broker
     ports:
@@ -86,7 +86,7 @@ services:
       - mongodb-service
       - qdrant-service
       - minio-service
-      - redis-broker
+      - broker
     volumes:
       - ./app:/code/app
       - ./logs:/code/logs
@@ -103,6 +103,9 @@ services:
     container_name: dev_celery_worker
     depends_on:
       - base
-      - redis-broker
+      - broker
     env_file:
       - .env
+    volumes:
+      - ./app:/code/app
+      - ./logs:/code/logs

@@ -18,7 +18,7 @@ def get_s3_client(S3_config: S3Settings = S3Settings()) -> client:
     '''
     
     try:
-        client = client(
+        s3_client = client(
             service_name='s3',
             aws_access_key_id= S3_config.ACCESS_KEY,
             aws_secret_access_key= S3_config.SECRET_KEY,
@@ -30,7 +30,7 @@ def get_s3_client(S3_config: S3Settings = S3Settings()) -> client:
         )
 
         logger.info("S3 client created")
-        return client
+        return s3_client
 
     except (NoCredentialsError, PartialCredentialsError) as e:
         logger.error("S3 credentials error: %s", e)

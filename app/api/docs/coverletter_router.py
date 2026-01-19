@@ -1,12 +1,15 @@
-from .base import router
-from fastapi import HTTPException
+from fastapi import HTTPException, APIRouter
 from app.core.logger import api_logger as logger
 from app.core.utils import generate_file_id
 from app.tasks import generate_cover_letter
 from app.tasks.interface import AsyncTaskResult
 
+router = APIRouter(
+    prefix="/cover_letter",
+    tags=["cover_letter"]
+)
 
-@router.get("/generate_cover_letter", response_model=AsyncTaskResult)
+@router.get("/generate", response_model=AsyncTaskResult)
 async def generate_cover_letter(
     user_id:str,
     job_data:str,
