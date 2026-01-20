@@ -9,3 +9,4 @@ sudo rm -r ./infra/mongo/mongodata
 sudo rm -r ./infra/qdrant_data
 sudo rm -r ./logs/*
 sudo rm -r ./infra/redis_data
+sudo rm -r ./infra/minio_data

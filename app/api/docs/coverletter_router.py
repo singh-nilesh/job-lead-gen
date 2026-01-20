@@ -21,6 +21,7 @@ async def generate_cover_letter(
     file_id = generate_file_id()
     try:
         task = generate_cover_letter.delay(
+            user_id = user_id,
             file_id = file_id,
             job_data = job_data,
             personalization_input = personalization_input

@@ -11,9 +11,13 @@ from celery.exceptions import Ignore
 
 # Celery task for ingesting resume file
 @celery_app.task(bind=True)
-def ingest_resume(self, file_id: str, file_ext:str = ".pdf") -> None:
+def ingest_resume(self, user_id:str, file_id: str, file_ext:str = ".pdf",) -> None:
     ''' Celery task for ingesting resume file '''
     
+    # Celery with asyncio setup
+    loop = asyncio.get_event_loop()
+    asyncio.set_event_loop(loop)
+
     s3_client = ObjectStorage()
     service = get_resume_ingestion_service()
     local_file_path = None
@@ -36,10 +40,10 @@ def ingest_resume(self, file_id: str, file_ext:str = ".pdf") -> None:
             raise Ignore() # permanent failure, no retries
         
         # async Ingest resume
-        ok = asyncio.run(
+        ok = loop.run_until_complete(
             service.ingest(
                 resume_filepath=local_file_path,
-                user_id=f"CeleryTask-{self.request.id}"
+                user_id= user_id
                 ))
         
         if not ok:
@@ -71,23 +75,29 @@ def ingest_resume(self, file_id: str, file_ext:str = ".pdf") -> None:
         return payload
     
     except Exception as e:
-        raise CustomException(f"Unexpected error ingesting resume for file_id:{file_id}: {e}", status_code=500)
+        raise CustomException(f"Unexpected error ingesting resume for task_id:{self.request.id} | file_id:{file_id}: {e}")
     
     finally:
         # file Cleanup
         os.remove(local_file_path) if local_file_path and os.path.exists(local_file_path) else None
+        loop.close()
 
 
 
 # Celery task for generating resume
 @celery_app.task(bind=True)
-def generate_resume(self, job_data: str, file_id:str) -> None:
+def generate_resume(self, user_id: str, job_data: str, file_id:str) -> None:
     ''' 
     Celery task for generating resume based on job data
     Args:
         job_data: The job description or data to tailor the resume.
         file_id: The S3 file ID where the generated resume will be uploaded.
     '''
+
+    # Celery with asyncio setup
+    loop = asyncio.get_event_loop()
+    asyncio.set_event_loop(loop)
+
     local_file_path = None
     service = get_resume_generation_service()
     s3 = ObjectStorage()
@@ -98,9 +108,9 @@ def generate_resume(self, job_data: str, file_id:str) -> None:
         temp_file.close()
 
         # async generate resume
-        output_path = asyncio.run(
+        output_path = loop.run_until_complete(
             service.generate(
-                user_id= f"{self.request.id}",
+                user_id= user_id,
                 job_data= job_data,
                 output_path= local_file_path
                 ))
@@ -138,8 +148,9 @@ def generate_resume(self, job_data: str, file_id:str) -> None:
         return payload
     
     except Exception as e:
-        raise CustomException(f"Unexpected error generating resume for file_id={file_id}: {e}", status_code=500)
+        raise CustomException(f"Unexpected error generating resume for task_id:{self.request.id} | file_id={file_id}: {e}")
     
     finally:
         # file cleanup
         os.remove(local_file_path) if local_file_path and os.path.exists(local_file_path) else None
+        loop.close()

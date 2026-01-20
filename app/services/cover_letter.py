@@ -10,7 +10,7 @@ from app.core.exception import ServiceException
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.output_parsers import PydanticOutputParser
 
-from app.llm.prompts.ingest_job_data import get_cover_letter_multi_query_prompt
+from app.llm.prompts.retrival_query import get_cover_letter_multi_query_prompt
 from app.llm.prompts.generate_coverletter import get_generate_coverletter_prompt
 from app.llm.models import get_llm_model
 from app.llm.schema import CoverLetterOutputSchema

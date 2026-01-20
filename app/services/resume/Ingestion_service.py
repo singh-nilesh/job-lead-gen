@@ -42,8 +42,6 @@ class ResumeIngestionService:
             # Step 2: Parse resume text using LLM chain
             resume_dict = await self._llm_parser(text)
 
-            logger.debug(f"Parsed resume dict: {resume_dict} for user_id:{user_id}")
-
             # Step 3: Save to APP database
             id_dict = await self._save_resume(resume_dict, user_id)
 

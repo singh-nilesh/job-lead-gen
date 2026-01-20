@@ -13,7 +13,7 @@ from app.llm.schema import ResumeOutputSchema
 
 from app.core.utils import _filter_unique_ids, _get_user_data
 from .helper_text_to_docx import _parse_to_docx
-
+import asyncio
 
 
 class ResumeGenerationService:
@@ -82,25 +82,34 @@ class ResumeGenerationService:
         return result.dict()
     
 
+    async def _async_vector_search(self, texts:str):
+        """ Async async vector search for multiple texts."""
+        doc = await self.vector_store.as_retriever(
+            search_type="similarity", 
+            search_kwargs={"k":2}
+            ).aget_relevant_documents(texts)
+        
+        if not doc:
+            logger.warning(f"No matching documents found for query text: '{texts[:50]}...'")
+            return None
+        return doc
+
+
     async def _query_user_data(self, user_id:str, job_data:dict) -> dict:
         """ Use similarity search to query user data relevant to the job description."""
         logger.info("Similarity searching user data as per job description.")
 
-        retriver = self.vector_store.as_retriever(
-            search_type="similarity", 
-            search_kwargs={"k":2}
-            )
         texts = job_data.get("description")
-        docs = []
 
-        # vector search 
-        for text in texts:
-            doc = await retriver.aget_relevant_documents(text)
-            if not doc:
-                logger.warning(f"No matching documents found for query text: '{text[:50]}...'")
-                continue
-            docs.extend(doc)
-        
+        # vector db search
+        async_searches = [ self._async_vector_search(texts) for texts in texts]
+        res = await asyncio.gather(*async_searches)
+
+        docs = []
+        for group in res:
+            if group:
+                docs.extend(group)
+
         if not docs:
             raise ServiceException("Insufficient user data found. Please upload or add more profile details before generating a resume.", status_code=404, logger=logger)
         else:
