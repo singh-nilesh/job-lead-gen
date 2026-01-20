@@ -13,22 +13,23 @@ router = APIRouter(
 )
 
 @router.get("/generate", response_model=AsyncTaskResult)
-async def generate_resume(
+async def resume_generate(
     user_id:str, 
     job_data:str,
     ):
     ''' Endpoint to generate a resume based on user data and job description '''
     logger.info(f"generate_resume called for user_id={user_id}")
 
-    file_id = generate_file_id()
+    file_id = generate_file_id(f"generated_resume_{user_id}.docx")
     try:
         task = generate_resume.delay(
+            user_id = user_id,
             file_id = file_id,
             job_data = job_data
         )
         return AsyncTaskResult(
             task_id= task.id,
-            status= task.status,
+            state= task.status,
             message= "Resume generation has been scheduled. use task id to check status"
         )
     
@@ -39,7 +40,7 @@ async def generate_resume(
 
 
 @router.post("/upload", response_model=AsyncTaskResult)
-async def upload_resume(
+async def resume_upload(
     user_id: str,
     file:UploadFile = File(..., description="Upload resume file (PDF or DOCX)"), 
     ):
@@ -62,6 +63,7 @@ async def upload_resume(
         s3.upload_fileobj(file.file, file_id=file_id)
 
         task = ingest_resume.delay(
+            user_id=user_id,
             file_id=file_id,
             file_ext=ext
             )

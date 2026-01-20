@@ -1,54 +1,81 @@
 # Job Lead Generator
 
-### Automated Job Application Assistant with Retrieval, Ranking, and Agentic Workflows
+Job Lead Generator is a backend service that automates retrieval, semantic ranking, and GenAI-driven generation of application materials (resumes and cover letters). It extracts and normalizes job postings, assesses candidate-job fit, retrieves high-quality contextual information via vector search and RAG fusion, and executes schema-validated LLM pipelines to produce role-specific documents—reducing repetitive work and speeding application preparation.
 
-This project was created to solve a personal, practical problem: applying for jobs involves repetitive tasks, manual comparisons, and repeated rewriting of documents (resume, cover letter) to improve the chances of being selected.
+This repository contains the backend implementation: a FastAPI API with JWT authentication, Celery-based asynchronous orchestration for LLM tasks, LangChain workflows with schema validation, and Qdrant-powered retrieval. Frontend and UX components are planned for future development.
 
-The goal of this system is to automate large parts of that workflow, saving time, reducing repetitive work load, and providing objective evaluations of how well a candidate fits a job posting. The platform extracts job postings, analyzes requirements, evaluates skill fit, and generates application materials on demand.
+## What’s implemented (backend-focused)
 
-> This project aims to automate the <b>"mechanical”</b> parts (retrieval, comparison, document generation) while leaving humans to focus on decision-making and actual career strategy.
+- FastAPI backend with typed Pydantic models and clear, service-oriented structure.
+- JWT authentication for API endpoints.
+- Celery-driven asynchronous orchestration for LLM tasks (resume & cover letter generation).
+- LangChain-based, multi-step generation workflows with schema validation to ensure reliable pipelines.
+- Multi-Query and RAG Fusion retrieval using Qdrant for high-quality context retrieval.
+- Vector store and retrieval layer abstractions (pluggable vector DB).
+- MongoDB for raw job storage and PostgreSQL schema scaffolding where applicable.
+- Object-store adapters (S3-compatible) and file helpers for artifact management.
+- Structured logging, config separation, and Docker-ready deployment artifacts.
 
-## Overview
+## High-level architecture
 
-The system consists of:
-- A browser extension that captures job descriptions directly from LinkedIn/Indeed.
+- API layer (FastAPI): auth, document generation endpoints, docs routers.
+- Async task layer (Celery): long-running LLM jobs, background generation and artifact persistence.
+- Retrieval layer (Qdrant / vector store): multi-query retrieval + RAG fusion to assemble context.
+- LLM layer (LangChain + embeddings): schema-validated prompts and generation flows.
+- Storage: MongoDB for raw job posts, object store for documents, optional Postgres for relational data.
 
-- A backend service (FastAPI) for data processing, retrieval, and generation.
+## Core features and workflows
 
-- A vector-based retrieval layer for semantic comparison of job posts and user profiles.
+- Job capture (planned): browser extension to capture job postings into MongoDB.
+- Job matching & ranking (backend ready): vector/semantic matching and scoring pipelines to surface best-fit roles.
+- Resume tailoring (backend ready): LangChain agents tailor resume sections to job requirements.
+- Cover letter generation (backend ready): RAG-powered generation that combines retrieved job context + user profile.
+- Skill-gap analysis (planned/enhanced): schemas and pipelines are in place; richer analytics and UI are pending.
 
-- Agentic workflows (LangChain/LangGraph) for tailoring resumes, generating cover letters, and performing skill-gap analysis.
+## Directory overview (backend)
+- app/main.py — FastAPI entrypoint
+- app/api — API routers (auth, docs/coverletter, docs/resume)
+- app/core — config, logging, Celery config, exceptions
+- app/db — vector store, object store, Mongo adapters
+- app/llm — embeddings, prompts, LLM models and prompts
+- app/services — resume & cover-letter generation services
+- app/tasks — Celery tasks that wrap LLM workflows
 
-## Core Features
+## Run & access Swagger API docs (step-by-step)
 
-1. <b>Job Capture (Browser Extension):</b>
+1. Clone the repo and enter the project directory:
+```bash
+git clone https://github.com/singh-nilesh/job-lead-gen.git
+cd job-lead-gen
+```
 
-    Extract job posting content from DOM. Optional manual text selection. Store raw job descriptions in MongoDB for later analysis.
+2. Copy the example environment and update secrets:
+```bash
+cp .env.example .env
+# edit .env and set JWT, DB, Qdrant, S3, LLM keys, etc.
+```
 
-2. <b>Job Matching & Ranking</b>
+3. Build and start services with Docker Compose:
+```bash
+docker compose up --build -d
+```
 
-    Uses vector similarity search (pgvector/Chroma) to compare saved job postings with the user’s profile. LangChain pipelines compute:
-    - Skill/experience overlap
-    - Semantic similarity scores
-    - Ranked list of best-fit roles
+4. Open the FastAPI Swagger UI:
+```
+http://localhost:8000/docs
+```
 
-3. <b>Resume Tailoring</b>
+To stop services:
+```bash
+docker compose down
+```
 
-    A LangChain agent retrieves the most relevant job requirements and rewrites resume sections accordingly. Highlights aligned skills and adjusts bullet points to match role expectations.
+Note: If the service binds to a different port, replace 8000 in the URL. See app/core/celery_config.py and app/core/config.py for runtime settings.
 
-4. <b>Cover Letter Generation</b>
+## Future work (non-exhaustive)
 
-    RAG workflow retrieves job details + user background and generates a structured cover letter via LangChain. Retrieval ensures contextually accurate, job-specific output.
-
-5. <b>Skill Gap Analysis</b>
-
-    Extracts required skills from job embeddings and compares them with the user’s skill vectors. The LangChain pipeline surfaces missing skills and provides improvement suggestions.
-
-### Technologies Used
-- FastAPI (API layer, typed models (pydantic), clean structure)
-- MongoDB (raw job storage)
-- pgvector / Qdrant (vector search)
-- LangChain / LangGraph (tool-based agent workflows)
-- Gemini (LLM generation, Embedding)
-- Docker (local orchestration)
-- Langsmith (experiment tracking)
+- Browser extension for job capture (LinkedIn/Indeed DOM extraction).
+- Web UI for application management and review.
+- End-to-end ingestion pipelines and scheduled scrapers.
+- Expanded LLM/provider integrations and more robust experiment tracking.
+- End-to-end tests and CI/CD for deployments and model/version governance.
